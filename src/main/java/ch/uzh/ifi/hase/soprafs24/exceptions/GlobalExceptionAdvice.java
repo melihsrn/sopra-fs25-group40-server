@@ -6,6 +6,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.TransactionSystemException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,9 +16,15 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.stream.Collectors;
+
 import javax.servlet.http.HttpServletRequest;
 
-@ControllerAdvice(annotations = RestController.class)
+@ControllerAdvice
+// (annotations = RestController.class)
 public class GlobalExceptionAdvice extends ResponseEntityExceptionHandler {
 
   private final Logger log = LoggerFactory.getLogger(GlobalExceptionAdvice.class);
@@ -40,4 +48,33 @@ public class GlobalExceptionAdvice extends ResponseEntityExceptionHandler {
     log.error("Default Exception Handler -> caught:", ex);
     return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), ex);
   }
+
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex, WebRequest request) {
+      log.warn("Handling ResponseStatusException - Status: {}, Reason: {}", ex.getStatus(), ex.getReason());
+      // Directly use the reason/message you passed when throwing the exception.
+      String message = ex.getReason(); 
+      return handleExceptionInternal(ex, message, new HttpHeaders(), ex.getStatus(), request);
+  }
+  
+
+
+  @Override
+  protected ResponseEntity<Object> handleMethodArgumentNotValid(
+      MethodArgumentNotValidException ex, 
+      HttpHeaders headers, 
+      HttpStatus status, 
+      WebRequest request) {
+      
+      Map<String, String> errors = new HashMap<>();
+      ex.getBindingResult().getAllErrors().forEach((error) -> {
+          String fieldName = ((FieldError) error).getField();
+          String errorMessage = error.getDefaultMessage();
+          errors.put(fieldName, errorMessage);
+      });
+
+      return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+  }
+
+
 }

@@ -5,8 +5,12 @@ import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
+import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * DTOMapperTest
@@ -19,6 +23,7 @@ public class DTOMapperTest {
     // create UserPostDTO
     UserPostDTO userPostDTO = new UserPostDTO();
     userPostDTO.setName("name");
+    userPostDTO.setPassword("1234");
     userPostDTO.setUsername("username");
 
     // MAP -> Create user
@@ -35,6 +40,7 @@ public class DTOMapperTest {
     User user = new User();
     user.setName("Firstname Lastname");
     user.setUsername("firstname@lastname");
+    user.setPassword("1234");
     user.setStatus(UserStatus.OFFLINE);
     user.setToken("1");
 

@@ -40,7 +40,7 @@ public class UserServiceIntegrationTest {
     assertNull(userRepository.findByUsername("testUsername"));
 
     User testUser = new User();
-    testUser.setName("testName");
+    testUser.setPassword("1234");
     testUser.setUsername("testUsername");
 
     // when
@@ -51,7 +51,7 @@ public class UserServiceIntegrationTest {
     assertEquals(testUser.getName(), createdUser.getName());
     assertEquals(testUser.getUsername(), createdUser.getUsername());
     assertNotNull(createdUser.getToken());
-    assertEquals(UserStatus.OFFLINE, createdUser.getStatus());
+    assertEquals(UserStatus.ONLINE, createdUser.getStatus()); // because in the create user, status is set Online as default 
   }
 
   @Test
@@ -60,14 +60,15 @@ public class UserServiceIntegrationTest {
 
     User testUser = new User();
     testUser.setName("testName");
+    testUser.setPassword("1234");
     testUser.setUsername("testUsername");
-    User createdUser = userService.createUser(testUser);
 
     // attempt to create second user with same username
     User testUser2 = new User();
 
     // change the name but forget about the username
     testUser2.setName("testName2");
+    testUser2.setPassword("1234");
     testUser2.setUsername("testUsername");
 
     // check that an error is thrown

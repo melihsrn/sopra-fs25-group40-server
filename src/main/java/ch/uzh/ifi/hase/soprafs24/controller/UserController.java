@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.UserLoginDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
@@ -25,6 +26,25 @@ public class UserController {
 
   UserController(UserService userService) {
     this.userService = userService;
+  }
+
+  @GetMapping("/users/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public UserGetDTO getUserById(@PathVariable Long id) {
+      // Fetch user from the service layer
+      User user = userService.getUserById(id);
+
+      // Convert entity to DTO and return
+      return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+  }
+
+  @PutMapping("/users/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @ResponseBody
+  public void updateUserInfo(@PathVariable Long id, @RequestBody User updatedUser) {
+      updatedUser.setId(id); // Ensure the ID is correctly set
+      userService.updateUser(updatedUser);
   }
 
   @GetMapping("/users")
@@ -54,4 +74,41 @@ public class UserController {
     // convert internal representation of user back to API
     return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
   }
+
+  // a login endpoint
+  @PostMapping("/login")
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public UserGetDTO loginUser(@RequestBody UserLoginDTO userLoginDTO) {
+      User user = userService.loginUser(userLoginDTO.getUsername(), userLoginDTO.getPassword());
+      return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+  }
+
+  @DeleteMapping("/users/logout/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public UserGetDTO logoutById(@PathVariable Long id) {
+      User user = userService.logoutUser(id);
+      return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+  }
+
+  @PostMapping("/register")
+  @ResponseStatus(HttpStatus.CREATED)
+  @ResponseBody
+  public UserGetDTO registerUser(@RequestBody UserPostDTO userPostDTO) {
+    // convert API user to internal representation
+    User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
+
+    // create user
+    User createdUser = userService.createUser(userInput);
+    // convert internal representation of user back to API
+    return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
+  }
+  
+  @GetMapping("/verify-token")
+  public Boolean verifyToken(@RequestParam String token) {
+    return userService.isTokenValid(token);  // Token is valid or not
+  }
+  
+
 }
