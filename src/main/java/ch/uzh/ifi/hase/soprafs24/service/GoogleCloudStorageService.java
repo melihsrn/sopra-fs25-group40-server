@@ -1,15 +1,10 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
 import com.google.cloud.storage.BlobId;
-import com.google.cloud.storage.Acl;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.Storage.SignUrlOption;
 import com.google.cloud.storage.StorageOptions;
-import java.net.URL;
-import java.util.concurrent.TimeUnit;
-import java.util.List;
 import org.springframework.stereotype.Service;
 
 @Service
