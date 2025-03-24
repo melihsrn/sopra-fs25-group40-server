@@ -1,11 +1,11 @@
 package ch.uzh.ifi.hase.soprafs24.rest.dto;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 import ch.uzh.ifi.hase.soprafs24.constant.FlashcardCategory;
 import ch.uzh.ifi.hase.soprafs24.entity.Flashcard;
+import ch.uzh.ifi.hase.soprafs24.entity.Quiz;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 
 public class DeckDTO {
@@ -18,9 +18,11 @@ public class DeckDTO {
 
     private FlashcardCategory deckCategory;
 
-    private List<Flashcard> flashcards = new ArrayList<>(); 
+    private List<Flashcard> flashcards; 
 
-    private boolean isPublic; 
+    private Quiz quiz;
+
+    private Boolean isPublic; 
 
     // Getters and Setters
     public Long getId() {
@@ -39,6 +41,14 @@ public class DeckDTO {
         this.user = user;
     }
 
+    public Quiz getQuiz() {
+        return quiz;
+    }
+    
+    public void setQuiz(Quiz quiz) {
+        this.quiz = quiz;
+    }
+
     public FlashcardCategory getDeckCategory() {
         return deckCategory;
     }
@@ -47,12 +57,12 @@ public class DeckDTO {
         this.deckCategory = deckCategory;
     }
 
-    public boolean getIsPublic() {
+    public Boolean getIsPublic() {
         return isPublic;
     }
 
-    public void setIsPublic(boolean aPublic) {
-        isPublic = aPublic;
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
     }
 
     public List<Flashcard> getFlashcards() {

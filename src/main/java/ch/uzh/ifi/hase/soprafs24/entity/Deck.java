@@ -22,7 +22,7 @@ public class Deck {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "quiz_id", nullable = false)
+    @JoinColumn(name = "quiz_id", nullable = true)
     @JsonIgnore
     private Quiz quiz;
 
@@ -36,7 +36,7 @@ public class Deck {
     private List<Flashcard> flashcards = new ArrayList<>();  // Always initialized
 
     @Column(nullable = false)
-    private boolean isPublic;
+    private Boolean isPublic;
 
     // Getters and Setters
     public Long getId() {
@@ -55,12 +55,12 @@ public class Deck {
         this.deckCategory = deckCategory;
     }
 
-    public boolean getIsPublic() {
+    public Boolean getIsPublic() {
         return isPublic;
     }
 
-    public void setIsPublic(boolean aPublic) {
-        isPublic = aPublic;
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
     }
 
     public List<Flashcard> getFlashcards() {
@@ -85,5 +85,13 @@ public class Deck {
     
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Quiz getQuiz() {
+        return quiz;
+    }
+    
+    public void setQuiz(Quiz quiz) {
+        this.quiz = quiz;
     }
 }

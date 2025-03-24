@@ -105,10 +105,5 @@ public class UserController {
     return DTOMapper.INSTANCE.convertEntityToUserGetDTO(createdUser);
   }
   
-  @GetMapping("/verify-token")
-  public Boolean verifyToken(@RequestParam String token) {
-    return userService.isTokenValid(token);  // Token is valid or not
-  }
-  
 
 }

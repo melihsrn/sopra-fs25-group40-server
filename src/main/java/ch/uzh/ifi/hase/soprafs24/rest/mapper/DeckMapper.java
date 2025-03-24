@@ -18,6 +18,7 @@ public class DeckMapper {
         dto.setIsPublic(deck.getIsPublic());
         dto.setUser(deck.getUser());
         dto.setFlashcards(deck.getFlashcards());
+        dto.setQuiz(deck.getQuiz());
         return dto;
     }
 
@@ -33,6 +34,7 @@ public class DeckMapper {
         deck.setIsPublic(dto.getIsPublic());
         deck.setUser(dto.getUser());
         deck.setFlashcards(dto.getFlashcards());
+        deck.setQuiz(dto.getQuiz());
         return deck;
     }
 }

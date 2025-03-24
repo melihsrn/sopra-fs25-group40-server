@@ -134,4 +134,12 @@ public class User implements Serializable {
   public void setDecks(List<Deck> decks) {
       this.decks = decks;
   }
+
+  public List<Score> getScores() {
+    return scores;
+  }
+
+  public void setScores(List<Score> scores) {
+      this.scores = scores;
+  }
 }

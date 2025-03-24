@@ -2,6 +2,7 @@ package ch.uzh.ifi.hase.soprafs24.rest.dto;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Deck;
+import ch.uzh.ifi.hase.soprafs24.entity.Score;
 
 import java.util.Date;
 import java.util.List;
@@ -16,6 +17,7 @@ public class UserGetDTO {
   private Date creationDate; // adding the additional variables in Get DTO so that we can fetch those information
   private Date birthday;
   private List<Deck> decks;
+  private List<Score> scores;
 
   // password not added because we dont display users password information
   public Long getId() {
@@ -80,5 +82,13 @@ public class UserGetDTO {
 
   public void setDecks(List<Deck> decks) {
       this.decks = decks;
+  }
+
+  public List<Score> getScores() {
+    return scores;
+  }
+
+  public void setScores(List<Score> scores) {
+      this.scores = scores;
   }
 }

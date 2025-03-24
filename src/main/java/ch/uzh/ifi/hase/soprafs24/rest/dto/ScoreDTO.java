@@ -1,38 +1,18 @@
-package ch.uzh.ifi.hase.soprafs24.entity;
+package ch.uzh.ifi.hase.soprafs24.rest.dto;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import ch.uzh.ifi.hase.soprafs24.entity.Quiz;
+import ch.uzh.ifi.hase.soprafs24.entity.User;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+public class ScoreDTO {
 
-@Entity
-@Table(name = "score")
-public class Score {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "quiz_id", nullable = false)
-    @JsonIgnore
     private Quiz quiz; 
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    @JsonIgnore
     private User user; 
 
-    @Column(nullable = true)
     private int correctQuestions;
 
-    @Column(nullable = true)
     private int totalQuestions;
 
     public Long getId() {
@@ -74,5 +54,4 @@ public class Score {
     public void setTotalQuestions(int totalQuestions) {
         this.totalQuestions = totalQuestions;
     }
-
 }

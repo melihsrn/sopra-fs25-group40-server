@@ -43,7 +43,7 @@ public class Flashcard implements Serializable {
     private String answer;
 
     @Column(nullable = false)
-    private boolean isPublic;
+    private Boolean isPublic;
 
     // Getters and Setters
     public Long getId() {
@@ -110,11 +110,11 @@ public class Flashcard implements Serializable {
         this.answer = answer;
     }
 
-    public boolean getIsPublic() {
+    public Boolean getIsPublic() {
         return isPublic;
     }
 
-    public void setIsPublic(boolean aPublic) {
-        isPublic = aPublic;
+    public void setIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
     }
 }

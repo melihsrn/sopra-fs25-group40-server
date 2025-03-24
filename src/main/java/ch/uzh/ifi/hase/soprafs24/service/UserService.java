@@ -86,9 +86,12 @@ public class UserService {
     return userRepository.findByToken(token).orElse(null);
   }
 
-  public boolean isTokenValid(String token) {
-    return findByToken(token) != null;
+  public void isStatusAvailable(UserStatus status) {
+    if (status.equals(UserStatus.OFFLINE) || status.equals(UserStatus.PLAYING)){
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"User not available!");
+    }
   }
+
   public Long getUserIdFromToken(String token) {
     User user = findByToken(token);
     return user != null ? user.getId() : null;
