@@ -1,11 +1,8 @@
 package ch.uzh.ifi.hase.soprafs24.rest.dto;
 
-import java.util.Date;
 import java.util.List;
 
-import ch.uzh.ifi.hase.soprafs24.constant.QuizStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Deck;
-import ch.uzh.ifi.hase.soprafs24.entity.Score;
 
 public class QuizInvitationDTO {
 

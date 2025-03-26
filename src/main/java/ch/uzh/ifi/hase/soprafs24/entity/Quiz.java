@@ -16,7 +16,6 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import ch.uzh.ifi.hase.soprafs24.constant.QuizStatus;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.QuizInvitationDTO;
 
 @Entity
 @Table(name = "quiz")
@@ -51,9 +50,6 @@ public class Quiz {
 
     @Column(nullable = false)
     private Boolean isMultiple;
-
-    @Column(nullable = false)
-    private QuizInvitationDTO quizInvitation;
     
 
     public Long getId() {
@@ -126,14 +122,6 @@ public class Quiz {
 
     public void setIsMultiple(Boolean isMultiple) {
         this.isMultiple = isMultiple;
-    }
-
-    public QuizInvitationDTO getQuizInvitation() {
-        return quizInvitation;
-    }
-
-    public void setQuizInvitation(QuizInvitationDTO quizInvitation) {
-        this.quizInvitation = quizInvitation;
     }
 
 }

@@ -27,8 +27,6 @@ public class QuizDTO {
 
     private Boolean isMultiple;
 
-    private QuizInvitationDTO quizInvitation;
-
     public Long getId() {
         return id;
     }
@@ -101,11 +99,4 @@ public class QuizDTO {
         this.isMultiple = isMultiple;
     }
 
-    public QuizInvitationDTO getQuizInvitation() {
-        return quizInvitation;
-    }
-
-    public void setQuizInvitation(QuizInvitationDTO quizInvitation) {
-        this.quizInvitation = quizInvitation;
-    }
 }

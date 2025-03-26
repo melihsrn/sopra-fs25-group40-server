@@ -41,6 +41,9 @@ public class User implements Serializable {
   @Column(nullable = true, unique = true)
   private String token;
 
+  @Column(nullable = true)
+  private String fcmToken;
+
   @Column(nullable = false)
   private UserStatus status;
 
@@ -93,6 +96,14 @@ public class User implements Serializable {
 
   public void setToken(String token) {
     this.token = token;
+  }
+
+  public String getFcmToken() {
+    return fcmToken;
+  }
+
+  public void setFcmToken(String fcmToken) {
+    this.fcmToken = fcmToken;
   }
 
   public UserStatus getStatus() {

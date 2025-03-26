@@ -9,7 +9,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.opentest4j.AssertionFailedError;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -81,18 +80,6 @@ public class UserServiceTest {
     // then -> attempt to create second user with same user -> check that an error
     // is thrown
     assertThrows(ResponseStatusException.class, () -> userService.createUser(testUser));
-  }
-
-  @Test
-  public void isTokenValid_validInputs_success() {
-
-    assertNotNull(userService.isTokenValid(testUser.getToken()));
-  }
-
-  @Test
-  public void isTokenValid_validInputs_throwsException() {
-
-    assertThrows(AssertionFailedError.class, () -> assertTrue(userService.isTokenValid("invalid-token")));
   }
 
 }

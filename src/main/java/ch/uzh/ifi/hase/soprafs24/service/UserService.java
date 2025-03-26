@@ -110,6 +110,9 @@ public class UserService {
           if (updatedUser.getBirthday() != null) {
               existingUser.setBirthday(updatedUser.getBirthday());
           }
+          if (updatedUser.getFcmToken() != null) {
+            existingUser.setFcmToken(updatedUser.getFcmToken());
+          }
 
           userRepository.save(existingUser);
       } else {

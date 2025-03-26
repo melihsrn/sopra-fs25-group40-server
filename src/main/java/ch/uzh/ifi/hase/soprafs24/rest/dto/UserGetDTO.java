@@ -12,6 +12,7 @@ public class UserGetDTO {
   private Long id;
   private String name;
   private String token;
+  private String fcmToken;
   private String username;
   private UserStatus status;
   private Date creationDate; // adding the additional variables in Get DTO so that we can fetch those information
@@ -42,6 +43,14 @@ public class UserGetDTO {
 
   public void setToken(String token) {
     this.token = token;
+  }
+
+  public String getFcmToken() {
+    return fcmToken;
+  }
+
+  public void setFcmToken(String fcmToken) {
+    this.fcmToken = fcmToken;
   }
 
   public String getUsername() {

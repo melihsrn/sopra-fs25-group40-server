@@ -1,69 +1,93 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.constant.QuizStatus;
+import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Quiz;
-import ch.uzh.ifi.hase.soprafs24.entity.Score;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.QuizRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.ScoreRepository;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.QuizInvitationDTO;
+import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 
-import java.util.Arrays;
-import java.util.Date;
 
+import java.util.Optional;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
 
 @Service
+@Transactional
 public class QuizService {
 
-    public UserService userService;
-    public ScoreRepository scoreRepository;
-    public QuizRepository quizRepository;
+    private final UserRepository userRepository;
 
-    
-    public Quiz createQuiz(QuizInvitationDTO quizInvitationDTO){
-        User senderUser = userService.getUserById(quizInvitationDTO.getFromUserId());
-        User invitedUser = userService.getUserById(quizInvitationDTO.getToUserId());
+    private final UserService userService;
+    private final FirebaseService firebaseService;
+    private final ScoreRepository scoreRepository;
+    private final QuizRepository quizRepository;
 
-        userService.isStatusAvailable(invitedUser.getStatus());
-
-        Quiz quiz = new Quiz();
-        quiz.setDecks(quizInvitationDTO.getDecks());
-        quiz.setStartTime(new Date());
-        quiz.setTimeLimit(quizInvitationDTO.getTimeLimit());
-        quiz.setQuizStatus(QuizStatus.WAITING);
-        quiz.setIsMultiple(quizInvitationDTO.getIsMultiple());
-        quiz.setQuizInvitation(quizInvitationDTO);
-
-        Score senderScore = new Score();
-        senderScore.setUser(senderUser);
-        senderScore.setQuiz(quiz);
-        scoreRepository.save(senderScore);
-
-        Score invitedScore = new Score();
-        invitedScore.setUser(invitedUser);
-        invitedScore.setQuiz(quiz);
-        scoreRepository.save(invitedScore);
-
-        quiz.setScores(Arrays.asList(senderScore, invitedScore));
-        quizRepository.save(quiz);
-
-        return quiz;
-
+    public QuizService(UserService userService,
+                        FirebaseService firebaseService,
+                        ScoreRepository scoreRepository,
+                        QuizRepository quizRepository, UserRepository userRepository) {
+        this.userService = userService;
+        this.firebaseService = firebaseService;
+        this.scoreRepository = scoreRepository;
+        this.quizRepository = quizRepository;
+        this.userRepository = userRepository;
     }
 
-    public Quiz sendInvitation(Quiz quiz) {
-        Boolean response = sendInvitationNotification(quiz);
 
-        if (response){
-            quiz.setQuizStatus(QuizStatus.IN_PROGRESS);
-        } else{
-            quiz.setQuizStatus(QuizStatus.CANCELLED);
+    public Quiz getQuizById(Long quizId) {
+        Optional<Quiz> existingQuizOpt = quizRepository.findById(quizId);
+        if (existingQuizOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz not found");
         }
-        return quiz;
+        Quiz existingQuiz = existingQuizOpt.get();
+
+        return existingQuiz;
     }
 
-    public Boolean sendInvitationNotification(Quiz quiz) {
-        return false;
+    public void sendInvitationNotification(Long senderId, Long receiverId, Quiz quiz) {
+
+        User receiver = userService.getUserById(receiverId);
+
+        // Retrieve the FCM token from the user
+        String fcmToken = receiver.getFcmToken();
+        if (fcmToken == null || fcmToken.isEmpty()) {
+            System.out.println("No FCM token found for user.");
+        }
+
+        // Send notification
+        firebaseService.sendInvitationNotification(senderId, receiverId, quiz.getId(), fcmToken);
+    }
+
+    public void updateQuizAndUserStatus(Long senderId, Long receiverId, Long quizId, Boolean response) {
+            Quiz quiz = getQuizById(quizId);
+            User sender = userService.getUserById(senderId);
+            User receiver = userService.getUserById(receiverId);
+
+            if (response) {
+                quiz.setQuizStatus(QuizStatus.IN_PROGRESS); // Change quiz status to "in progress"
+                sender.setStatus(UserStatus.PLAYING);
+                receiver.setStatus(UserStatus.PLAYING);
+
+                userRepository.save(sender);
+                userRepository.save(receiver);
+
+                quizRepository.save(quiz);
+
+                // Send notification
+                firebaseService.sendQuizResponseNotification(sender, quiz.getId(), true);
+            } else {
+                if (quizRepository.existsById(quizId)) {
+                    quizRepository.delete(quiz);
+                }
+
+                // Send notification
+                firebaseService.sendQuizResponseNotification(sender, quiz.getId(), false);
+            }
     }
 }
