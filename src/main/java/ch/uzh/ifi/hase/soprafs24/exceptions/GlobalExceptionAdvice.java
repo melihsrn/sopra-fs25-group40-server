@@ -49,15 +49,19 @@ public class GlobalExceptionAdvice extends ResponseEntityExceptionHandler {
     return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), ex);
   }
 
-  @ExceptionHandler(ResponseStatusException.class)
-  public ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex, WebRequest request) {
-      log.warn("Handling ResponseStatusException - Status: {}, Reason: {}", ex.getStatus(), ex.getReason());
-      // Directly use the reason/message you passed when throwing the exception.
-      String message = ex.getReason(); 
-      return handleExceptionInternal(ex, message, new HttpHeaders(), ex.getStatus(), request);
-  }
-  
+@ExceptionHandler(ResponseStatusException.class)
+public ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex, HttpServletRequest request) {
+    log.warn("Handling ResponseStatusException - Status: {}, Reason: {}", ex.getStatus(), ex.getReason());
 
+    Map<String, Object> errorBody = new HashMap<>();
+    errorBody.put("timestamp", java.time.LocalDateTime.now());
+    errorBody.put("status", ex.getStatus().value());
+    errorBody.put("error", ex.getStatus().getReasonPhrase());
+    errorBody.put("message", ex.getReason());
+    errorBody.put("path", request.getRequestURI());
+
+    return new ResponseEntity<>(errorBody, ex.getStatus());
+}
 
   @Override
   protected ResponseEntity<Object> handleMethodArgumentNotValid(

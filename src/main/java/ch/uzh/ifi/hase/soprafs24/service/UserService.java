@@ -74,12 +74,16 @@ public class UserService {
    * @see User
    */
   private void checkIfUserExists(User userToBeCreated) {
-    User userByUsername = userRepository.findByUsername(userToBeCreated.getUsername());
-    // name is not a defining factor for user but username should be unique!
-    String baseErrorMessage = "The username provided is not unique. Therefore, the user could not be created!";
-    if (userByUsername != null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, baseErrorMessage); 
-    }
+      String providedUsername = userToBeCreated.getUsername();
+
+      if (providedUsername == null || providedUsername.trim().isEmpty()) {
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username must not be empty.");
+      }
+
+      User userByUsername = userRepository.findByUsername(providedUsername);
+      if (userByUsername != null) {
+          throw new ResponseStatusException(HttpStatus.CONFLICT, "Username '" + providedUsername + "' is already taken. Please choose a different one.");
+      }
   }
 
   private User findByToken(String token) {
@@ -129,12 +133,17 @@ public class UserService {
   // login function
   public User loginUser(String username, String password) {
     User user = userRepository.findByUsername(username);
+      if (username == null || username.trim().isEmpty()) {
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Username must not be empty.");
+      }
+      if (password == null || password.trim().isEmpty()) {
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must not be empty.");
+      }
+      if (user == null) {
+          throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No user registered with username '" + username + "'. Please check your credentials or register.");
+      }
 
-    if (user == null) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "A user not found with this username.");
-    }
-
-    if (!passwordEncoder.matches(password, user.getPassword())) {
+      if (!passwordEncoder.matches(password, user.getPassword())) {
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials.");
     }
 
