@@ -5,9 +5,7 @@ import ch.uzh.ifi.hase.soprafs24.entity.Deck;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import org.mapstruct.*;
 
-@Mapper
 public class DeckMapper {
 
     public static DeckDTO toDTO(Deck deck) {
@@ -17,8 +15,12 @@ public class DeckMapper {
         dto.setDeckCategory(deck.getDeckCategory());
         dto.setIsPublic(deck.getIsPublic());
         dto.setUser(deck.getUser());
+        dto.setIsAiGenerated(deck.getIsAiGenerated());
+        dto.setAiPrompt(deck.getAiPrompt());
         dto.setFlashcards(deck.getFlashcards());
         dto.setQuiz(deck.getQuiz());
+        // Map the transient field: numberofAIcards
+        dto.setNumberofAICards(deck.getNumberofAIcards());
         return dto;
     }
 
@@ -33,8 +35,12 @@ public class DeckMapper {
         deck.setDeckCategory(dto.getDeckCategory());
         deck.setIsPublic(dto.getIsPublic());
         deck.setUser(dto.getUser());
+        deck.setIsAiGenerated(dto.getIsAiGenerated());
+        deck.setAiPrompt(dto.getAiPrompt());
         deck.setFlashcards(dto.getFlashcards());
         deck.setQuiz(dto.getQuiz());
+        // Map the transient field: numberofAIcards (if provided)
+        deck.setNumberofAIcards(dto.getNumberofAICards());
         return deck;
     }
 }

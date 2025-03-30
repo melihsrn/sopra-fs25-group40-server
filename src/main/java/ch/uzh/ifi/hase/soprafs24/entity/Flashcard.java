@@ -3,7 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.entity;
 import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import ch.uzh.ifi.hase.soprafs24.constant.FlashcardCategory;
 
 import java.io.Serializable;
@@ -33,17 +33,15 @@ public class Flashcard implements Serializable {
     @Column(nullable = false)
     private String description;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private FlashcardCategory flashcardCategory;
 
     @Column(nullable = false)
+    @JsonProperty("wrong_answers")
     private String[] wrongAnswers;
 
     @Column(nullable = false)
     private String answer;
-
-    @Column(nullable = false)
-    private Boolean isPublic;
 
     // Getters and Setters
     public Long getId() {
@@ -108,13 +106,5 @@ public class Flashcard implements Serializable {
 
     public void setAnswer(String answer) {
         this.answer = answer;
-    }
-
-    public Boolean getIsPublic() {
-        return isPublic;
-    }
-
-    public void setIsPublic(Boolean isPublic) {
-        this.isPublic = isPublic;
     }
 }
