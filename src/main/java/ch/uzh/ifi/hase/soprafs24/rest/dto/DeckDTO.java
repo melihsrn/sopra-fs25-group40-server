@@ -5,6 +5,7 @@ import java.util.List;
 
 import ch.uzh.ifi.hase.soprafs24.constant.FlashcardCategory;
 import ch.uzh.ifi.hase.soprafs24.entity.Flashcard;
+import ch.uzh.ifi.hase.soprafs24.entity.Invitation;
 import ch.uzh.ifi.hase.soprafs24.entity.Quiz;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 
@@ -21,6 +22,8 @@ public class DeckDTO {
     private List<Flashcard> flashcards; 
 
     private Quiz quiz;
+
+    private Invitation invitation;
 
     private Boolean isPublic;
 
@@ -60,6 +63,14 @@ public class DeckDTO {
     
     public void setQuiz(Quiz quiz) {
         this.quiz = quiz;
+    }
+
+    public Invitation getInvitation() {
+        return invitation;
+    }
+    
+    public void setInvitation(Invitation invitation) {
+        this.invitation = invitation;
     }
 
     public FlashcardCategory getDeckCategory() {

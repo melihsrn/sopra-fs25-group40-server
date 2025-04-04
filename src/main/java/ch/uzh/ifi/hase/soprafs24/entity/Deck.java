@@ -26,6 +26,11 @@ public class Deck {
     @JsonIgnore
     private Quiz quiz;
 
+    @ManyToOne
+    @JoinColumn(name = "invitation_id", nullable = true)
+    @JsonIgnore
+    private Invitation invitation;
+
     private String title;
 
     @Column(nullable = false)
@@ -103,6 +108,14 @@ public class Deck {
     
     public void setQuiz(Quiz quiz) {
         this.quiz = quiz;
+    }
+
+    public Invitation getInvitation() {
+        return invitation;
+    }
+    
+    public void setInvitation(Invitation invitation) {
+        this.invitation = invitation;
     }
 
     public Boolean getIsAiGenerated() {

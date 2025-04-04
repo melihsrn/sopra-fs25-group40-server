@@ -10,7 +10,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -32,6 +34,11 @@ public class Quiz {
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Score> scores = new ArrayList<>();
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "invitation_id")
+    @JsonIgnore
+    private Invitation invitation;
 
     @Column(nullable = false)
     private Date startTime;
@@ -74,6 +81,14 @@ public class Quiz {
     
     public void setScores(List<Score> scores) {
         this.scores = scores;
+    }
+
+    public Invitation getInvitation() {
+        return invitation;
+      }
+    
+    public void setInvitation(Invitation invitation) {
+        this.invitation = invitation;
     }
 
     public Date getStartTime() {

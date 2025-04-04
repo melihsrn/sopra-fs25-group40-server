@@ -41,8 +41,8 @@ public class User implements Serializable {
   @Column(nullable = true, unique = true)
   private String token;
 
-  @Column(nullable = true)
-  private String fcmToken;
+  // @Column(nullable = true)
+  // private String fcmToken;
 
   @Column(nullable = false)
   private UserStatus status;
@@ -64,6 +64,14 @@ public class User implements Serializable {
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonIgnore
   private List<Score> scores = new ArrayList<>();
+
+  @OneToMany(mappedBy = "fromUser", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore
+  private List<Invitation> invitationsSent = new ArrayList<>();
+
+  @OneToMany(mappedBy = "toUser", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore
+  private List<Invitation> invitationsReceived = new ArrayList<>();
 
 
   public Long getId() {
@@ -98,13 +106,13 @@ public class User implements Serializable {
     this.token = token;
   }
 
-  public String getFcmToken() {
-    return fcmToken;
-  }
+  // public String getFcmToken() {
+  //   return fcmToken;
+  // }
 
-  public void setFcmToken(String fcmToken) {
-    this.fcmToken = fcmToken;
-  }
+  // public void setFcmToken(String fcmToken) {
+  //   this.fcmToken = fcmToken;
+  // }
 
   public UserStatus getStatus() {
     return status;
@@ -151,6 +159,24 @@ public class User implements Serializable {
   }
 
   public void setScores(List<Score> scores) {
-      this.scores = scores;
+    this.scores = scores;
   }
+
+  public List<Invitation> getInvitationsSent() {
+    return invitationsSent;
+  }
+
+  public void setInvitationsSent(List<Invitation> invitationsSent) {
+    this.invitationsSent = invitationsSent;
+  }
+
+  public List<Invitation> getInvitationsReceived() {
+    return invitationsReceived;
+  }
+
+  public void setInvitationsReceived(List<Invitation> invitationsReceived) {
+    this.invitationsReceived = invitationsReceived;
+  }
+
+
 }

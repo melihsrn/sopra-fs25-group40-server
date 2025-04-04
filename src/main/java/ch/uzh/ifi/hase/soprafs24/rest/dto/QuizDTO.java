@@ -5,6 +5,7 @@ import java.util.List;
 
 import ch.uzh.ifi.hase.soprafs24.constant.QuizStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Deck;
+import ch.uzh.ifi.hase.soprafs24.entity.Invitation;
 import ch.uzh.ifi.hase.soprafs24.entity.Score;
 
 public class QuizDTO {
@@ -14,6 +15,8 @@ public class QuizDTO {
     private List<Deck> decks;
 
     private List<Score> scores;
+
+    private Invitation invitation;
 
     private Date startTime;
  
@@ -49,6 +52,14 @@ public class QuizDTO {
     
     public void setScores(List<Score> scores) {
         this.scores = scores;
+    }
+
+    public Invitation getInvitation() {
+        return invitation;
+      }
+    
+    public void setInvitation(Invitation invitation) {
+        this.invitation = invitation;
     }
 
     public Date getStartTime() {

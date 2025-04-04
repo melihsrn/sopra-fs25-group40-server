@@ -4,7 +4,9 @@ import java.util.List;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Deck;
 
-public class QuizInvitationDTO {
+public class InvitationDTO {
+
+    private Long id;
 
     private List<Deck> decks;
 
@@ -12,9 +14,19 @@ public class QuizInvitationDTO {
 
     private Long toUserId;
 
+    private Long quizId;
+
     private int timeLimit;
 
-    private Boolean isMultiple;
+    private Boolean isAccepted;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public Long getFromUserId() {
         return fromUserId;
@@ -30,6 +42,14 @@ public class QuizInvitationDTO {
 
     public void setToUserId(Long toUserId) {
         this.toUserId = toUserId;
+    }
+
+    public Long getQuizId() {
+        return quizId;
+    }
+
+    public void setQuizId(Long quizId) {
+        this.quizId = quizId;
     }
 
     public List<Deck> getDecks() {
@@ -48,11 +68,12 @@ public class QuizInvitationDTO {
         this.timeLimit = timeLimit;
     }
 
-    public Boolean getIsMultiple() {
-        return isMultiple;
+    public Boolean getIsAccepted() {
+        return isAccepted;
     }
 
-    public void setIsMultiple(Boolean isMultiple) {
-        this.isMultiple = isMultiple;
+    public void setIsAccepted(Boolean isAccepted) {
+        this.isAccepted = isAccepted;
     }
+
 }
