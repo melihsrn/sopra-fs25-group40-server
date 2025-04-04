@@ -35,15 +35,13 @@ public class QuizController {
     public void sendQuizInvitation(@RequestBody @Valid QuizInvitationDTO quizInvitationDTO) {
         // Create the invitation
         Quiz quiz = quizMapper.fromInvitationToEntity(quizInvitationDTO);
-        System.out.println(quiz.toString());
+
         quizService.sendInvitationNotification(quizInvitationDTO.getFromUserId(), quizInvitationDTO.getToUserId(), quiz);
     }
 
     @PutMapping("/respond")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void respondToQuizInvitation(@RequestBody QuizResponseDTO response) {
-        System.out.println(response.getFromUserId().toString() + response.getToUserId().toString() + response.getQuizId().toString() + response.getResponse().toString());
-
         quizService.updateQuizAndUserStatus(response.getFromUserId(), response.getToUserId(), response.getQuizId(), response.getResponse());
     }
 }
