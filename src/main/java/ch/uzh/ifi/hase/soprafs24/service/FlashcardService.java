@@ -3,15 +3,18 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import ch.uzh.ifi.hase.soprafs24.entity.Flashcard;
 import ch.uzh.ifi.hase.soprafs24.entity.Deck;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
-import ch.uzh.ifi.hase.soprafs24.repository.FlashcardRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.DeckRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.FlashcardRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -23,11 +26,23 @@ public class FlashcardService {
     private final FlashcardRepository flashcardRepository;
     private final UserRepository userRepository;
     private final DeckRepository deckRepository;
+    private final ChatGptService chatGptService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public FlashcardService(FlashcardRepository flashcardRepository, UserRepository userRepository, DeckRepository deckRepository) {
+    public FlashcardService(FlashcardRepository flashcardRepository,
+                            UserRepository userRepository,
+                            DeckRepository deckRepository,
+                            ChatGptService chatGptService) {
         this.flashcardRepository = flashcardRepository;
         this.userRepository = userRepository;
         this.deckRepository = deckRepository;
+        this.chatGptService = chatGptService;
+
+        // Register the JavaTimeModule to properly handle Java 8 date/time types.
+        objectMapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+        // Disable writing dates as timestamps.
+        objectMapper.disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     }
 
     public List<Deck> getDecks(Long userId) {
@@ -49,12 +64,59 @@ public class FlashcardService {
         return existingDeck;
     }
 
+    /**
+     * Helper method to parse the JSON string into a list of Flashcard objects.
+     * Assumes that the JSON is a list of flashcards where each flashcard contains
+     * the fields: description, answer, and wrongAnswers.
+     */
+    private List<Flashcard> parseFlashcardsFromJson(String jsonResponse) {
+        try {
+            // Parse the JSON into a tree
+            JsonNode root = objectMapper.readTree(jsonResponse);
+            // Extract the "flashcards" node
+            JsonNode flashcardsNode = root.get("flashcards");
+            if (flashcardsNode == null || !flashcardsNode.isArray()) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Invalid flashcards format in ChatGPT response: " + jsonResponse);
+            }
+            // Deserialize the flashcards array into a list of Flashcard objects
+            return objectMapper.readValue(flashcardsNode.toString(), new TypeReference<List<Flashcard>>() {});
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error parsing flashcards from ChatGPT response", e);
+        }
+    }
+
+
     // @Transactional
-    public Deck createDeck(Long userId, Deck deck) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    public Deck createDeck(Long userId, Deck deck, Integer numberOfCards) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         deck.setUser(user);
+
+        if (Boolean.TRUE.equals(deck.getIsAiGenerated())) {
+            // Build the prompt using deck details and numberOfCards
+            String prompt = "title of Card Deck is '" + deck.getTitle() + "' "
+                    + "with deck category " + deck.getDeckCategory().toString() + " "
+                    + " with user given instructions - " + deck.getAiPrompt() + " ";
+
+            // Call ChatGPT API via ChatGptService
+            String jsonResponse = chatGptService.generateFlashcards(prompt, numberOfCards);
+            // Extract the generated text from the API response
+            String generatedJson = chatGptService.extractGeneratedText(jsonResponse);
+            // Parse the JSON response into Flashcard objects
+            List<Flashcard> flashcards = parseFlashcardsFromJson(generatedJson);
+
+            // Assign the deck to each flashcard so that deck_id is not null
+            for (Flashcard flashcard : flashcards) {
+                flashcard.setDeck(deck);
+            }
+            deck.setFlashcards(flashcards);
+        }
+
         return deckRepository.save(deck);
     }
+
 
     public void updateDeck(Long id, Deck updatedDeck) {
         Deck existingDeck = getDeckById(id);
@@ -65,7 +127,6 @@ public class FlashcardService {
         List<Flashcard> flashcards = existingDeck.getFlashcards();
         
         for (Flashcard flashcard : flashcards) {
-            flashcard.setIsPublic(existingDeck.getIsPublic());
             flashcard.setFlashcardCategory(existingDeck.getDeckCategory());
         }
 
@@ -95,7 +156,6 @@ public class FlashcardService {
         Deck deck = getDeckById(deckId);
         flashcard.setDeck(deck);
         flashcard.setFlashcardCategory(deck.getDeckCategory());
-        flashcard.setIsPublic(deck.getIsPublic());
         checkIfAnswerIsDuplicated(flashcard);
         return flashcardRepository.save(flashcard); 
     }

@@ -22,9 +22,22 @@ public class DeckDTO {
 
     private Quiz quiz;
 
-    private Boolean isPublic; 
+    private Boolean isPublic;
 
-    // Getters and Setters
+    private Boolean isAiGenerated;
+
+    private String aiPrompt;
+
+    private Integer numberOfAICards;
+
+    // Getters and setters for numberOfCards
+
+    public Boolean getIsAiGenerated() { return isAiGenerated; }
+    public void setIsAiGenerated(Boolean isAiGenerated) { this.isAiGenerated = isAiGenerated; }
+
+    public String getAiPrompt() { return aiPrompt; }
+    public void setAiPrompt(String aiPrompt) { this.aiPrompt = aiPrompt; }
+
     public Long getId() {
         return id;
     }
@@ -79,6 +92,14 @@ public class DeckDTO {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public Integer getNumberofAICards() {
+        return numberOfAICards;
+    }
+
+    public void setNumberofAICards(Integer numberOfAICards) {
+        this.numberOfAICards = numberOfAICards;
     }
 
 }

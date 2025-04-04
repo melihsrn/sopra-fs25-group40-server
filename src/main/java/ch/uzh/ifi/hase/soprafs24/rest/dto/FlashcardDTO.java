@@ -3,8 +3,6 @@ package ch.uzh.ifi.hase.soprafs24.rest.dto;
 
 import java.time.LocalDate;
 
-import javax.validation.constraints.NotNull;
-
 import ch.uzh.ifi.hase.soprafs24.constant.FlashcardCategory;
 import ch.uzh.ifi.hase.soprafs24.entity.Deck;
 
@@ -26,8 +24,6 @@ public class FlashcardDTO {
 
     private String[] wrongAnswers;
 
-    @NotNull
-    private boolean isPublic;
 
     // Getters & Setters
     public Long getId() {
@@ -92,14 +88,6 @@ public class FlashcardDTO {
 
     public void setWrongAnswers(String[] wrongAnswers) {
         this.wrongAnswers = wrongAnswers;
-    }
-
-    public boolean getIsPublic() {
-        return isPublic;
-    }
-
-    public void setIsPublic(boolean isPublic) {
-        this.isPublic = isPublic;
     }
 
 }

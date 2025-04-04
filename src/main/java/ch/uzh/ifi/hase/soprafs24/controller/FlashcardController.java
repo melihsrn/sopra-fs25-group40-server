@@ -64,9 +64,16 @@ public class FlashcardController {
     @ResponseBody
     public DeckDTO createDeck(@RequestParam Long userId, @Valid @RequestBody DeckDTO deckDTO) {
         Deck deck = DeckMapper.toEntity(deckDTO);
-        Deck createdDeck = flashcardService.createDeck(userId, deck);
+        // If numberOfCards is not provided, default to 5 when AI generation is enabled
+        System.out.println("NUMBER OF AI CARDS: " + deckDTO.getNumberofAICards());
+        int numberOfCards = (deckDTO.getIsAiGenerated() != null && deckDTO.getIsAiGenerated() && deckDTO.getNumberofAICards() != null)
+                ? deckDTO.getNumberofAICards()
+                : ((deckDTO.getIsAiGenerated() != null && deckDTO.getIsAiGenerated()) ? 5 : 0);
+        Deck createdDeck = flashcardService.createDeck(userId, deck, numberOfCards);
         return DeckMapper.toDTO(createdDeck);
     }
+
+
 
     @PutMapping("/decks/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

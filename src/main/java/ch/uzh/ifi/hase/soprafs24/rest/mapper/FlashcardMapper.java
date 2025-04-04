@@ -19,7 +19,6 @@ public class FlashcardMapper {
         dto.setFlashcardCategory(flashcard.getFlashcardCategory());
         dto.setAnswer(flashcard.getAnswer());
         dto.setWrongAnswers(flashcard.getWrongAnswers());
-        dto.setIsPublic(flashcard.getIsPublic());
         dto.setDeck(flashcard.getDeck());
         return dto;
     }
@@ -37,7 +36,6 @@ public class FlashcardMapper {
         flashcard.setFlashcardCategory(dto.getFlashcardCategory());
         flashcard.setAnswer(dto.getAnswer());
         flashcard.setWrongAnswers(dto.getWrongAnswers());
-        flashcard.setIsPublic(dto.getIsPublic());
         flashcard.setDeck(dto.getDeck());
         return flashcard;
     }
