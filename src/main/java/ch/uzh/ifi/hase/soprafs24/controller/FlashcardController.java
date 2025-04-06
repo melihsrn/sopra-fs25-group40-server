@@ -111,9 +111,8 @@ public class FlashcardController {
     @PutMapping("/flashcards/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public void updateFlashcardInfo(@PathVariable Long id, @RequestBody Flashcard updatedFlashcard) {
-        updatedFlashcard.setId(id); // Ensure the ID is correctly set
-        flashcardService.updateFlashcard(updatedFlashcard);
+    public void updateFlashcardInfo(@PathVariable Long id, @RequestBody FlashcardDTO updatedFlashcard) {
+        flashcardService.updateFlashcard(id, FlashcardMapper.toEntity(updatedFlashcard));
     }
 
     @PostMapping("/decks/{deckId}/flashcards/addFlashcard")

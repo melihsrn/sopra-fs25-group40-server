@@ -174,8 +174,8 @@ public class FlashcardService {
         }
     }
 
-    public void updateFlashcard(Flashcard updatedFlashcard) {
-        Optional<Flashcard> existingFlashcardOptional = flashcardRepository.findById(updatedFlashcard.getId());
+    public void updateFlashcard(Long flashcardId, Flashcard updatedFlashcard) {
+        Optional<Flashcard> existingFlashcardOptional = flashcardRepository.findById(flashcardId);
 
         if (existingFlashcardOptional.isPresent()) {
             Flashcard existingFlashcard = existingFlashcardOptional.get();

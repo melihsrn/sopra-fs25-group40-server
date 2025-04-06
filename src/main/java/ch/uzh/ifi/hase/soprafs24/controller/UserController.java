@@ -42,9 +42,8 @@ public class UserController {
   @PutMapping("/users/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   @ResponseBody
-  public void updateUserInfo(@PathVariable Long id, @RequestBody User updatedUser) {
-      updatedUser.setId(id); // Ensure the ID is correctly set
-      userService.updateUser(updatedUser);
+  public void updateUserInfo(@PathVariable Long id, @RequestBody UserPostDTO updatedUser) {
+      userService.updateUser(id, DTOMapper.INSTANCE.convertUserPostDTOtoEntity(updatedUser));
   }
 
   @GetMapping("/users")

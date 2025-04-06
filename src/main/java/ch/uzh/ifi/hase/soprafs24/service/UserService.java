@@ -101,8 +101,8 @@ public class UserService {
     return user != null ? user.getId() : null;
   }
 
-  public void updateUser(User updatedUser) {
-      Optional<User> existingUserOptional = userRepository.findById(updatedUser.getId());
+  public void updateUser(Long userId, User updatedUser) {
+      Optional<User> existingUserOptional = userRepository.findById(userId);
 
       if (existingUserOptional.isPresent()) {
           User existingUser = existingUserOptional.get();
