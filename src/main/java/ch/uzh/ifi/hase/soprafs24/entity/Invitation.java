@@ -18,7 +18,11 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter 
+@Setter // Generates getters, setters automatically
 @Entity
 @Table(name = "invitation")
 public class Invitation  implements Serializable {
@@ -56,68 +60,68 @@ public class Invitation  implements Serializable {
     @Column(nullable = true)
     private Date isAcceptedDate;
     
-    public Long getId() {
-        return id;
-    }
+    // public Long getId() {
+    //     return id;
+    // }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    // public void setId(Long id) {
+    //     this.id = id;
+    // }
 
-    public Quiz getQuiz() {
-        return quiz;
-    }
+    // public Quiz getQuiz() {
+    //     return quiz;
+    // }
 
-    public void setQuiz(Quiz quiz) {
-        this.quiz = quiz;
-    }
+    // public void setQuiz(Quiz quiz) {
+    //     this.quiz = quiz;
+    // }
 
-    public User getFromUser() {
-        return fromUser;
-    }
+    // public User getFromUser() {
+    //     return fromUser;
+    // }
 
-    public void setFromUser(User fromUser) {
-        this.fromUser = fromUser;
-    }
+    // public void setFromUser(User fromUser) {
+    //     this.fromUser = fromUser;
+    // }
 
-    public User getToUser() {
-        return toUser;
-    }
+    // public User getToUser() {
+    //     return toUser;
+    // }
 
-    public void setToUser(User toUser) {
-        this.toUser = toUser;
-    }
+    // public void setToUser(User toUser) {
+    //     this.toUser = toUser;
+    // }
 
-    public List<Deck> getDecks() {
-        return decks;
-      }
+    // public List<Deck> getDecks() {
+    //     return decks;
+    //   }
     
-    public void setDecks(List<Deck> decks) {
-        this.decks = decks;
-    }
+    // public void setDecks(List<Deck> decks) {
+    //     this.decks = decks;
+    // }
 
-    public int getTimeLimit() {
-        return timeLimit;
-    }
+    // public int getTimeLimit() {
+    //     return timeLimit;
+    // }
 
-    public void setTimeLimit(int timeLimit) {
-        this.timeLimit = timeLimit;
-    }
+    // public void setTimeLimit(int timeLimit) {
+    //     this.timeLimit = timeLimit;
+    // }
 
-    public Boolean getIsAccepted() {
-        return isAccepted;
-    }
+    // public Boolean getIsAccepted() {
+    //     return isAccepted;
+    // }
 
-    public void setIsAccepted(Boolean isAccepted) {
-        this.isAccepted = isAccepted;
-    }
+    // public void setIsAccepted(Boolean isAccepted) {
+    //     this.isAccepted = isAccepted;
+    // }
 
-    public Date getIsAcceptedDate() {
-        return isAcceptedDate;
-    }
+    // public Date getIsAcceptedDate() {
+    //     return isAcceptedDate;
+    // }
 
-    public void setIsAcceptedDate(Date isAcceptedDate) {
-        this.isAcceptedDate = isAcceptedDate;
-    }
+    // public void setIsAcceptedDate(Date isAcceptedDate) {
+    //     this.isAcceptedDate = isAcceptedDate;
+    // }
 
 }

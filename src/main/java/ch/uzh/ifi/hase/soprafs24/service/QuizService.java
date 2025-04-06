@@ -2,15 +2,18 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.constant.QuizStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
+import ch.uzh.ifi.hase.soprafs24.entity.Deck;
 import ch.uzh.ifi.hase.soprafs24.entity.Invitation;
 import ch.uzh.ifi.hase.soprafs24.entity.Quiz;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.repository.DeckRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.InvitationRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.QuizRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.InvitationDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.QuizMapper;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -34,19 +37,22 @@ public class QuizService {
     private final QuizRepository quizRepository;
     private final InvitationRepository invitationRepository;
     private final QuizMapper quizMapper;
+    private final DeckRepository deckRepository;
 
     public QuizService(UserService userService,
                         // FirebaseService firebaseService,
                         QuizRepository quizRepository, 
                         UserRepository userRepository,
                         InvitationRepository invitationRepository,
-                        QuizMapper quizMapper) {
+                        QuizMapper quizMapper,
+                        DeckRepository deckRepository) {
         this.userService = userService;
         // this.firebaseService = firebaseService;
         this.quizRepository = quizRepository;
         this.userRepository = userRepository;
         this.invitationRepository = invitationRepository;
         this.quizMapper = quizMapper;
+        this.deckRepository = deckRepository;
     }
 
 
@@ -115,8 +121,15 @@ public class QuizService {
         invitation.setFromUser(fromUser);
         invitation.setToUser(toUser);
         invitation.setTimeLimit(invitationDTO.getTimeLimit());
-        invitation.setDecks(invitationDTO.getDecks());
         invitation.setIsAccepted(false);
+
+        List<Deck> managedDecks = invitationDTO.getDecks().stream()
+            .map(deck -> deckRepository.findById(deck.getId()).orElseThrow(
+                () -> new RuntimeException("Deck not found: " + deck.getId())
+            ))
+            .collect(Collectors.toList());
+
+        invitation.setDecks(new ArrayList<>(managedDecks));
 
         invitationRepository.save(invitation);
 

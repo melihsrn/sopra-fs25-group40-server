@@ -12,7 +12,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter 
+@Setter // Generates getters, setters automatically
 @Entity
 @Table(name = "score")
 public class Score  implements Serializable {
@@ -39,44 +43,44 @@ public class Score  implements Serializable {
     @Column(nullable = true)
     private int totalQuestions;
 
-    public Long getId() {
-        return id;
-    }
+    // public Long getId() {
+    //     return id;
+    // }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    // public void setId(Long id) {
+    //     this.id = id;
+    // }
 
-    public Quiz getQuiz() {
-        return quiz;
-    }
+    // public Quiz getQuiz() {
+    //     return quiz;
+    // }
 
-    public void setQuiz(Quiz quiz) {
-        this.quiz = quiz;
-    }
+    // public void setQuiz(Quiz quiz) {
+    //     this.quiz = quiz;
+    // }
 
-    public User getUser() {
-        return user;
-    }
+    // public User getUser() {
+    //     return user;
+    // }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
+    // public void setUser(User user) {
+    //     this.user = user;
+    // }
 
-    public int getCorrectQuestions() {
-        return correctQuestions;
-    }
+    // public int getCorrectQuestions() {
+    //     return correctQuestions;
+    // }
 
-    public void setCorrectQuestions(int correctQuestions) {
-        this.correctQuestions = correctQuestions;
-    }
+    // public void setCorrectQuestions(int correctQuestions) {
+    //     this.correctQuestions = correctQuestions;
+    // }
 
-    public int getTotalQuestions() {
-        return totalQuestions;
-    }
+    // public int getTotalQuestions() {
+    //     return totalQuestions;
+    // }
 
-    public void setTotalQuestions(int totalQuestions) {
-        this.totalQuestions = totalQuestions;
-    }
+    // public void setTotalQuestions(int totalQuestions) {
+    //     this.totalQuestions = totalQuestions;
+    // }
 
 }

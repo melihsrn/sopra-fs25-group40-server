@@ -65,9 +65,9 @@ public class FlashcardController {
     public DeckDTO createDeck(@RequestParam Long userId, @Valid @RequestBody DeckDTO deckDTO) {
         Deck deck = DeckMapper.toEntity(deckDTO);
         // If numberOfCards is not provided, default to 5 when AI generation is enabled
-        System.out.println("NUMBER OF AI CARDS: " + deckDTO.getNumberofAICards());
-        int numberOfCards = (deckDTO.getIsAiGenerated() != null && deckDTO.getIsAiGenerated() && deckDTO.getNumberofAICards() != null)
-                ? deckDTO.getNumberofAICards()
+        System.out.println("NUMBER OF AI CARDS: " + deckDTO.getNumberOfAICards());
+        int numberOfCards = (deckDTO.getIsAiGenerated() != null && deckDTO.getIsAiGenerated() && deckDTO.getNumberOfAICards() != null)
+                ? deckDTO.getNumberOfAICards()
                 : ((deckDTO.getIsAiGenerated() != null && deckDTO.getIsAiGenerated()) ? 5 : 0);
         Deck createdDeck = flashcardService.createDeck(userId, deck, numberOfCards);
         return DeckMapper.toDTO(createdDeck);

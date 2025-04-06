@@ -32,6 +32,10 @@ springBoot {
 }
 
 dependencies {
+    // Lombok dependency
+    compileOnly 'org.projectlombok:lombok:1.18.24'  // Use the latest version
+    annotationProcessor 'org.projectlombok:lombok:1.18.24' // This is required for annotation processing
+
     implementation 'org.springframework.security:spring-security-crypto:5.7.0' // for password crypt encoder
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'

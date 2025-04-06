@@ -22,6 +22,11 @@ import java.util.List;
  * - unique = true -> this value must be unqiue across the database -> composes
  * the primary key
  */
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter 
+@Setter // Generates getters, setters automatically
 @Entity
 @Table(name = "user")
 public class User implements Serializable {
@@ -74,109 +79,109 @@ public class User implements Serializable {
   private List<Invitation> invitationsReceived = new ArrayList<>();
 
 
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getUsername() {
-    return username;
-  }
-
-  public void setUsername(String username) {
-    this.username = username;
-  }
-
-  public String getToken() {
-    return token;
-  }
-
-  public void setToken(String token) {
-    this.token = token;
-  }
-
-  // public String getFcmToken() {
-  //   return fcmToken;
+  // public Long getId() {
+  //   return id;
   // }
 
-  // public void setFcmToken(String fcmToken) {
-  //   this.fcmToken = fcmToken;
+  // public void setId(Long id) {
+  //   this.id = id;
   // }
 
-  public UserStatus getStatus() {
-    return status;
-  }
+  // public String getName() {
+  //   return name;
+  // }
 
-  public void setStatus(UserStatus status) {
-    this.status = status;
-  }
+  // public void setName(String name) {
+  //   this.name = name;
+  // }
 
-  public String getPassword() {
-    return password;
-  }
+  // public String getUsername() {
+  //   return username;
+  // }
 
-  public void setPassword(String password) {
-    this.password = password;
-  }
+  // public void setUsername(String username) {
+  //   this.username = username;
+  // }
 
-  public Date getCreationDate() {
-    return creationDate;
-  }
+  // public String getToken() {
+  //   return token;
+  // }
 
-  public void setCreationDate(Date creationDate) {
-    this.creationDate = creationDate;
-  }
+  // public void setToken(String token) {
+  //   this.token = token;
+  // }
 
-  public Date getBirthday() {
-    return birthday;
-  }
+  // // public String getFcmToken() {
+  // //   return fcmToken;
+  // // }
 
-  public void setBirthday(Date birthday) {
-    this.birthday = birthday;
-  }
+  // // public void setFcmToken(String fcmToken) {
+  // //   this.fcmToken = fcmToken;
+  // // }
 
-  public List<Deck> getDecks() {
-    return decks;
-  }
+  // public UserStatus getStatus() {
+  //   return status;
+  // }
 
-  public void setDecks(List<Deck> decks) {
-      this.decks = decks;
-  }
+  // public void setStatus(UserStatus status) {
+  //   this.status = status;
+  // }
 
-  public List<Score> getScores() {
-    return scores;
-  }
+  // public String getPassword() {
+  //   return password;
+  // }
 
-  public void setScores(List<Score> scores) {
-    this.scores = scores;
-  }
+  // public void setPassword(String password) {
+  //   this.password = password;
+  // }
 
-  public List<Invitation> getInvitationsSent() {
-    return invitationsSent;
-  }
+  // public Date getCreationDate() {
+  //   return creationDate;
+  // }
 
-  public void setInvitationsSent(List<Invitation> invitationsSent) {
-    this.invitationsSent = invitationsSent;
-  }
+  // public void setCreationDate(Date creationDate) {
+  //   this.creationDate = creationDate;
+  // }
 
-  public List<Invitation> getInvitationsReceived() {
-    return invitationsReceived;
-  }
+  // public Date getBirthday() {
+  //   return birthday;
+  // }
 
-  public void setInvitationsReceived(List<Invitation> invitationsReceived) {
-    this.invitationsReceived = invitationsReceived;
-  }
+  // public void setBirthday(Date birthday) {
+  //   this.birthday = birthday;
+  // }
+
+  // public List<Deck> getDecks() {
+  //   return decks;
+  // }
+
+  // public void setDecks(List<Deck> decks) {
+  //     this.decks = decks;
+  // }
+
+  // public List<Score> getScores() {
+  //   return scores;
+  // }
+
+  // public void setScores(List<Score> scores) {
+  //   this.scores = scores;
+  // }
+
+  // public List<Invitation> getInvitationsSent() {
+  //   return invitationsSent;
+  // }
+
+  // public void setInvitationsSent(List<Invitation> invitationsSent) {
+  //   this.invitationsSent = invitationsSent;
+  // }
+
+  // public List<Invitation> getInvitationsReceived() {
+  //   return invitationsReceived;
+  // }
+
+  // public void setInvitationsReceived(List<Invitation> invitationsReceived) {
+  //   this.invitationsReceived = invitationsReceived;
+  // }
 
 
 }

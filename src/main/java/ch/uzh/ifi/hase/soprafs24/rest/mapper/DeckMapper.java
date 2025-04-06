@@ -21,7 +21,7 @@ public class DeckMapper {
         dto.setQuiz(deck.getQuiz());
         dto.setInvitation(deck.getInvitation());
         // Map the transient field: numberofAIcards
-        dto.setNumberofAICards(deck.getNumberofAIcards());
+        dto.setNumberOfAICards(deck.getNumberOfAIcards());
         return dto;
     }
 
@@ -42,7 +42,7 @@ public class DeckMapper {
         deck.setQuiz(dto.getQuiz());
         deck.setInvitation(dto.getInvitation());
         // Map the transient field: numberofAIcards (if provided)
-        deck.setNumberofAIcards(dto.getNumberofAICards());
+        deck.setNumberOfAIcards(dto.getNumberOfAICards());
         return deck;
     }
 }
