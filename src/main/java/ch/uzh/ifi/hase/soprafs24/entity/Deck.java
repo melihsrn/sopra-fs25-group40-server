@@ -58,7 +58,7 @@ public class Deck  implements Serializable {
 
     // Transient field: not stored in database, defaults to null.
     @Transient
-    private Integer numberOfAIcards;
+    private Integer numberOfAICards;
 
     // // Getters and Setters
     // public Long getId() {
