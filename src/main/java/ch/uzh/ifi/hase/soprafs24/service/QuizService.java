@@ -123,9 +123,9 @@ public class QuizService {
         invitation.setTimeLimit(invitationDTO.getTimeLimit());
         invitation.setIsAccepted(false);
 
-        List<Deck> managedDecks = invitationDTO.getDecks().stream()
-            .map(deck -> deckRepository.findById(deck.getId()).orElseThrow(
-                () -> new RuntimeException("Deck not found: " + deck.getId())
+        List<Deck> managedDecks = invitationDTO.getDeckIds().stream()
+            .map(deckId -> deckRepository.findById(deckId).orElseThrow(
+                () -> new RuntimeException("Deck not found: " + deckId)
             ))
             .collect(Collectors.toList());
 

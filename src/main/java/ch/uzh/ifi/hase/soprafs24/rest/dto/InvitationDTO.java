@@ -2,7 +2,6 @@ package ch.uzh.ifi.hase.soprafs24.rest.dto;
 
 import java.util.List;
 
-import ch.uzh.ifi.hase.soprafs24.entity.Deck;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,7 +11,7 @@ public class InvitationDTO {
 
     private Long id;
 
-    private List<Deck> decks;
+    private List<Long> deckIds;
 
     private Long fromUserId;
 

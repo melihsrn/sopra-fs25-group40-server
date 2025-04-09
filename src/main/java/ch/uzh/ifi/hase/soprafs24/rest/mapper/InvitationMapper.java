@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,12 +15,17 @@ public class InvitationMapper {
     public InvitationDTO toDTO(Invitation invitation) {
         InvitationDTO dto = new InvitationDTO();
         dto.setId(invitation.getId());
-        dto.setDecks(invitation.getDecks());
         dto.setTimeLimit(invitation.getTimeLimit());
         dto.setIsAccepted(invitation.getIsAccepted());
         dto.setFromUserId(invitation.getFromUser().getId());
         dto.setToUserId(invitation.getToUser().getId());
         dto.setQuizId(invitation.getQuiz().getId());
+
+        List<Long> managedDeckIds = invitation.getDecks().stream()
+            .map(deck -> deck.getId())
+            .collect(Collectors.toList());
+
+        dto.setDeckIds(new ArrayList<>(managedDeckIds));
         return dto;
     }
 
