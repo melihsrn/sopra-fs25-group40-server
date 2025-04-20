@@ -19,8 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.transaction.Transactional;
+
 
 @Service
+@Transactional
 public class FlashcardService {
 
     private final FlashcardRepository flashcardRepository;
@@ -114,7 +117,10 @@ public class FlashcardService {
             deck.setFlashcards(flashcards);
         }
 
-        return deckRepository.save(deck);
+        deckRepository.save(deck);
+        deckRepository.flush();
+
+        return deck;
     }
 
 
@@ -132,6 +138,8 @@ public class FlashcardService {
 
         flashcardRepository.saveAll(flashcards);
         deckRepository.save(existingDeck);
+        deckRepository.flush();
+        flashcardRepository.flush();
     }
 
     public void deleteDeck(Long id) {
@@ -139,6 +147,7 @@ public class FlashcardService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Deck not found");
         }
         deckRepository.deleteById(id);
+        deckRepository.flush();
     }
 
     public List<Flashcard> getAllFlashcardsForDeck(Long deckId) {
@@ -157,7 +166,9 @@ public class FlashcardService {
         flashcard.setDeck(deck);
         flashcard.setFlashcardCategory(deck.getDeckCategory());
         checkIfAnswerIsDuplicated(flashcard);
-        return flashcardRepository.save(flashcard); 
+        flashcardRepository.save(flashcard);
+        flashcardRepository.flush();;
+        return flashcard; 
     }
     
     private void checkIfAnswerIsDuplicated(Flashcard flashcardToBeChecked) {
@@ -201,6 +212,7 @@ public class FlashcardService {
             checkIfAnswerIsDuplicated(existingFlashcard);
 
             flashcardRepository.save(existingFlashcard);
+            flashcardRepository.flush();
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Flashcard not found");
         }
@@ -211,6 +223,7 @@ public class FlashcardService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Flashcard not found"));
 
         flashcardRepository.delete(flashcard);  // Use `delete()` instead of `deleteById()` for consistency with your test
+        flashcardRepository.flush();
     }
 
     public void removeImageFromFlashcard(String imageUrl) {
@@ -218,6 +231,7 @@ public class FlashcardService {
         if (flashcard != null) {
             flashcard.setImageUrl(null);  // Remove the image URL from the flashcard
             flashcardRepository.save(flashcard);  // Save the updated flashcard
+            flashcardRepository.flush();
         }
     }
 

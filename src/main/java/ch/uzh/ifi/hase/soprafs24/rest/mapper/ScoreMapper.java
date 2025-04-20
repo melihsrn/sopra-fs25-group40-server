@@ -3,14 +3,15 @@ package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.mapstruct.*;
+import org.springframework.stereotype.Component;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Score;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.ScoreDTO;
 
-@Mapper
+@Component
 public class ScoreMapper {
-        public static ScoreDTO toDTO(Score score) {
+
+    public ScoreDTO toDTO(Score score) {
         ScoreDTO dto = new ScoreDTO();
         dto.setId(score.getId());
         dto.setQuiz(score.getQuiz());
@@ -20,11 +21,11 @@ public class ScoreMapper {
         return dto;
     }
 
-    public static List<ScoreDTO> toDTOList(List<Score> scores) {
-        return scores.stream().map(ScoreMapper::toDTO).collect(Collectors.toList());
+    public List<ScoreDTO> toDTOList(List<Score> scores) {
+        return scores.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    public static Score toEntity(ScoreDTO dto) {
+    public Score toEntity(ScoreDTO dto) {
         Score score = new Score();
         score.setId(dto.getId());
         score.setQuiz(dto.getQuiz());
