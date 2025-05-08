@@ -61,6 +61,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'com.google.cloud:google-cloud-storage:2.27.0' // Google Cloud Storage dependency
     implementation 'com.google.firebase:firebase-admin:9.2.0' // Firestore dependency
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.h2database:h2'

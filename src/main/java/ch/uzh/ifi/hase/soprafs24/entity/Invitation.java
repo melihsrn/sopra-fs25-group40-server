@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.entity;
 
 import java.util.Date;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ import lombok.Setter;
 public class Invitation  implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -60,68 +62,12 @@ public class Invitation  implements Serializable {
     @Column(nullable = true)
     private Date isAcceptedDate;
     
-    // public Long getId() {
-    //     return id;
-    // }
-
-    // public void setId(Long id) {
-    //     this.id = id;
-    // }
-
-    // public Quiz getQuiz() {
-    //     return quiz;
-    // }
-
-    // public void setQuiz(Quiz quiz) {
-    //     this.quiz = quiz;
-    // }
-
-    // public User getFromUser() {
-    //     return fromUser;
-    // }
-
-    // public void setFromUser(User fromUser) {
-    //     this.fromUser = fromUser;
-    // }
-
-    // public User getToUser() {
-    //     return toUser;
-    // }
-
-    // public void setToUser(User toUser) {
-    //     this.toUser = toUser;
-    // }
-
-    // public List<Deck> getDecks() {
-    //     return decks;
-    //   }
-    
-    // public void setDecks(List<Deck> decks) {
-    //     this.decks = decks;
-    // }
-
-    // public int getTimeLimit() {
-    //     return timeLimit;
-    // }
-
-    // public void setTimeLimit(int timeLimit) {
-    //     this.timeLimit = timeLimit;
-    // }
-
-    // public Boolean getIsAccepted() {
-    //     return isAccepted;
-    // }
-
-    // public void setIsAccepted(Boolean isAccepted) {
-    //     this.isAccepted = isAccepted;
-    // }
-
-    // public Date getIsAcceptedDate() {
-    //     return isAcceptedDate;
-    // }
-
-    // public void setIsAcceptedDate(Date isAcceptedDate) {
-    //     this.isAcceptedDate = isAcceptedDate;
-    // }
-
 }
+//     // The quiz session associated with this invitation.
+//     @ManyToOne(fetch = FetchType.LAZY)
+//     @JoinColumn(name = "quiz_id", nullable = false)
+//     private Quiz quiz;
+
+//     // Status of the invitation (e.g., PENDING, ACCEPTED, DECLINED)
+//     @Column(nullable = false)
+//     private InvitationStatus status;

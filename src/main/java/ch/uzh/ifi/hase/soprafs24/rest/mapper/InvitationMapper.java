@@ -41,5 +41,4 @@ public class InvitationMapper {
     //     invitation.setToUser(dto.getToUserId());
     //     return invitation;
     // }
-
 }

@@ -78,5 +78,4 @@ public class InvitationDTO {
     // public void setIsAccepted(Boolean isAccepted) {
     //     this.isAccepted = isAccepted;
     // }
-
 }

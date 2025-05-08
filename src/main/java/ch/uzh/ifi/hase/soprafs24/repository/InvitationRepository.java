@@ -18,5 +18,4 @@ public interface InvitationRepository extends JpaRepository<Invitation, Long> {
     List<Invitation> findByFromUser(User fromUser);
 
     List<Invitation> findByToUser(User toUser);
-
 }
