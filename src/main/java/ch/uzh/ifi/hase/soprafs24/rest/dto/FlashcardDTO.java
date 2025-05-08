@@ -5,7 +5,11 @@ import java.time.LocalDate;
 
 import ch.uzh.ifi.hase.soprafs24.constant.FlashcardCategory;
 import ch.uzh.ifi.hase.soprafs24.entity.Deck;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter 
+@Setter // Generates getters, setters automatically
 public class FlashcardDTO {
 
     private Long id;
@@ -25,69 +29,69 @@ public class FlashcardDTO {
     private String[] wrongAnswers;
 
 
-    // Getters & Setters
-    public Long getId() {
-        return id;
-    }
+    // // Getters & Setters
+    // public Long getId() {
+    //     return id;
+    // }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    // public void setId(Long id) {
+    //     this.id = id;
+    // }
 
-    public Deck getDeck() {
-        return deck;
-    }
+    // public Deck getDeck() {
+    //     return deck;
+    // }
 
-    public void setDeck(Deck deck) {
-        this.deck = deck;
-    }
+    // public void setDeck(Deck deck) {
+    //     this.deck = deck;
+    // }
 
-    public String getImageUrl() {
-        return imageUrl;
-    }
+    // public String getImageUrl() {
+    //     return imageUrl;
+    // }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
+    // public void setImageUrl(String imageUrl) {
+    //     this.imageUrl = imageUrl;
+    // }
 
-    public LocalDate getDate() {
-        return date;
-    }
+    // public LocalDate getDate() {
+    //     return date;
+    // }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
+    // public void setDate(LocalDate date) {
+    //     this.date = date;
+    // }
 
-    public String getDescription() {
-        return description;
-    }
+    // public String getDescription() {
+    //     return description;
+    // }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    // public void setDescription(String description) {
+    //     this.description = description;
+    // }
 
-    public FlashcardCategory getFlashcardCategory() {
-        return flashcardCategory;
-    }
+    // public FlashcardCategory getFlashcardCategory() {
+    //     return flashcardCategory;
+    // }
 
-    public void setFlashcardCategory(FlashcardCategory flashcardCategory) {
-        this.flashcardCategory = flashcardCategory;
-    }
+    // public void setFlashcardCategory(FlashcardCategory flashcardCategory) {
+    //     this.flashcardCategory = flashcardCategory;
+    // }
 
-    public String getAnswer() {
-        return answer;
-    }
+    // public String getAnswer() {
+    //     return answer;
+    // }
 
-    public void setAnswer(String answer) {
-        this.answer = answer;
-    }
+    // public void setAnswer(String answer) {
+    //     this.answer = answer;
+    // }
 
-    public String[] getWrongAnswers() {
-        return wrongAnswers;
-    }
+    // public String[] getWrongAnswers() {
+    //     return wrongAnswers;
+    // }
 
-    public void setWrongAnswers(String[] wrongAnswers) {
-        this.wrongAnswers = wrongAnswers;
-    }
+    // public void setWrongAnswers(String[] wrongAnswers) {
+    //     this.wrongAnswers = wrongAnswers;
+    // }
 
 }

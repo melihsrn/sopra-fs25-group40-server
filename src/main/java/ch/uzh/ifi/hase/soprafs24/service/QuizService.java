@@ -1,17 +1,34 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
+import ch.uzh.ifi.hase.soprafs24.constant.QuizStatus;
+import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
+
 import ch.uzh.ifi.hase.soprafs24.entity.Deck;
 import ch.uzh.ifi.hase.soprafs24.entity.Flashcard;
+import ch.uzh.ifi.hase.soprafs24.entity.Invitation;
 import ch.uzh.ifi.hase.soprafs24.entity.Quiz;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
-import ch.uzh.ifi.hase.soprafs24.constant.QuizStatus;
+
 import ch.uzh.ifi.hase.soprafs24.repository.DeckRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.InvitationRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.QuizRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
+
 import ch.uzh.ifi.hase.soprafs24.rest.dto.QuizAnswerResponseDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.QuizUpdateMessageDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.QuizUpdateMessageDTO.PlayerProgressDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.InvitationDTO;
+
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.FlashcardMapper;
+import ch.uzh.ifi.hase.soprafs24.rest.mapper.QuizMapper;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -25,250 +42,302 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+
 @Service
 public class QuizService {
 
-    @Autowired
-    private QuizRepository quizRepository;
+    /* ────────────────── Dependencies ────────────────── */
+    private final UserService            userService;
+    private final QuizRepository         quizRepository;
+    private final UserRepository         userRepository;
+    private final InvitationRepository   invitationRepository;
+    private final DeckRepository         deckRepository;
+    private final QuizMapper             quizMapper;
+    private final SimpMessagingTemplate  messagingTemplate;
+    private final StatisticsService      statisticsService;
 
-    @Autowired
-    private DeckRepository deckRepository;
+    public QuizService(UserService userService,
+                       QuizRepository quizRepository,
+                       UserRepository userRepository,
+                       InvitationRepository invitationRepository,
+                       DeckRepository deckRepository,
+                       QuizMapper quizMapper,
+                       SimpMessagingTemplate messagingTemplate,
+                       StatisticsService statisticsService) {
+        this.userService          = userService;
+        this.quizRepository       = quizRepository;
+        this.userRepository       = userRepository;
+        this.invitationRepository = invitationRepository;
+        this.deckRepository       = deckRepository;
+        this.quizMapper           = quizMapper;
+        this.messagingTemplate    = messagingTemplate;
+        this.statisticsService    = statisticsService;
+    }
 
-    @Autowired
-    private UserRepository userRepository;
+    /* ─────────────────────────── Invitation logic (from main) ─────────────────────────── */
 
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    public Invitation getInvitationById(Long invitationId) {
+        return invitationRepository.findById(invitationId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invitation not found"));
+    }
 
-    @Autowired
-    private StatisticsService statisticsService;
+    public List<Invitation> getInvitationByFromUserId(Long fromUserId) {
+        User fromUser = userService.getUserById(fromUserId);
+        return invitationRepository.findByFromUser(fromUser);
+    }
 
-    /**
-     * Creates a new quiz.
-     * Single-player: set status to IN_PROGRESS immediately.
-     * Multi-player: set status to WAITING until second user accepts.
-     * Also randomly picks 'numberOfQuestions' from the deck's flashcards.
-     */
-    public Quiz startQuiz(Long deckId, int numberOfQuestions, int timeLimit, Boolean isMultiple) {
-        Deck deck = deckRepository.findById(deckId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deck not found"));
+    public List<Invitation> getInvitationByToUserId(Long toUserId) {
+        User toUser = userService.getUserById(toUserId);
+        return invitationRepository.findByToUser(toUser);
+    }
 
-        List<Flashcard> allFlashcards = deck.getFlashcards();
-        if (allFlashcards.size() < numberOfQuestions) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Not enough flashcards in the deck to fulfill the requested number of questions");
+    public void deleteInvitationById(Long invitationId) {
+        Invitation invitation = getInvitationById(invitationId);
+        invitationRepository.delete(invitation);
+    }
+
+    /* Helper to ensure a user can be invited */
+    private void checkUserStatusForInvitation(User user) {
+        if (user.getStatus() == UserStatus.OFFLINE || user.getStatus() == UserStatus.PLAYING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User cannot be OFFLINE or PLAYING.");
         }
+    }
 
-        Collections.shuffle(allFlashcards);
-        List<Flashcard> selected = allFlashcards.subList(0, numberOfQuestions);
+    public Invitation createInvitation(InvitationDTO dto) {
+        User fromUser = userService.getUserById(dto.getFromUserId());
+        User toUser   = userService.getUserById(dto.getToUserId());
+        checkUserStatusForInvitation(fromUser);
+        checkUserStatusForInvitation(toUser);
 
-        Quiz quiz = new Quiz();
-        quiz.setTimeLimit(timeLimit);
-        quiz.setStartTime(new Date());
-        quiz.setIsMultiple(isMultiple != null && isMultiple);
+        Invitation inv = new Invitation();
+        inv.setFromUser(fromUser);
+        inv.setToUser(toUser);
+        inv.setTimeLimit(dto.getTimeLimit());
+        inv.setIsAccepted(false);
 
-        // Single-player => start immediately
-        // Multi-player => wait for second user
-        if (Boolean.TRUE.equals(isMultiple)) {
-            quiz.setQuizStatus(QuizStatus.WAITING);
-        } else {
-            quiz.setQuizStatus(QuizStatus.IN_PROGRESS);
-        }
+        List<Deck> managedDecks = dto.getDeckIds().stream()
+                .map(id -> deckRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Deck not found: " + id)))
+                .collect(Collectors.toList());
 
-        // Link the deck to the quiz
-        quiz.getDecks().add(deck);
-        // Store the chosen flashcards in the quiz
-        quiz.setSelectedFlashcards(new ArrayList<>(selected));
-        deck.setQuiz(quiz);
+        inv.setDecks(new ArrayList<>(managedDecks));
+        invitationRepository.save(inv);
+        return inv;
+    }
 
+    public Quiz createQuiz(Long invitationId) {
+        Invitation inv = getInvitationById(invitationId);
+        Quiz quiz = quizMapper.fromInvitationToEntity(inv);
+        inv.setQuiz(quiz);
+
+        invitationRepository.save(inv);
         quizRepository.save(quiz);
         return quiz;
     }
 
-    /**
-     * Called after second user accepts invitation in a multi-player quiz.
-     * If we detect enough participants, set status to IN_PROGRESS.
-     */
+    public void confirmedInvitation(Long invitationId) {
+        Invitation inv = getInvitationById(invitationId);
+        Quiz quiz      = inv.getQuiz();
+
+        quiz.setQuizStatus(QuizStatus.IN_PROGRESS);
+        quiz.setStartTime(new Date());
+        inv.setIsAccepted(true);
+        inv.setIsAcceptedDate(new Date());
+
+        User sender   = inv.getFromUser();
+        User receiver = inv.getToUser();
+        sender.setStatus(UserStatus.PLAYING);
+        receiver.setStatus(UserStatus.PLAYING);
+
+        userRepository.save(sender);
+        userRepository.save(receiver);
+        quizRepository.save(quiz);
+        invitationRepository.save(inv);
+    }
+
+    public void rejectedInvitation(Long invitationId) {
+        Invitation inv = getInvitationById(invitationId);
+        if (inv.getQuiz() != null) {
+            quizRepository.delete(inv.getQuiz());
+        }
+        invitationRepository.delete(inv);
+    }
+
+    /** Returns the *earliest* accepted invitation from a sender and cleans up the rest. */
+    public Invitation findInvitationByFromUserIdAndIsAcceptedTrue(Long fromUserId) {
+        List<Invitation> accepted = getInvitationByFromUserId(fromUserId).stream()
+                .filter(Invitation::getIsAccepted)
+                .sorted(Comparator.comparing(Invitation::getIsAcceptedDate))
+                .collect(Collectors.toList());
+
+        if (accepted.isEmpty()) return null;
+
+        Invitation keep = accepted.get(0);
+        accepted.subList(1, accepted.size()).forEach(late -> {
+            if (late.getQuiz() != null) {
+                quizRepository.delete(late.getQuiz());
+            }
+            User toUser = late.getToUser();
+            toUser.setStatus(UserStatus.ONLINE);
+            userRepository.save(toUser);
+
+            invitationRepository.delete(late);
+        });
+        return keep;
+    }
+
+    /* ─────────────────────────── Quiz-runtime logic (from shak_branch) ─────────────────────────── */
+
+    /** Creates a single- or multi-player quiz, selecting random questions from a deck. */
+    public Quiz startQuiz(Long deckId, int numberOfQuestions, int timeLimit, Boolean isMultiple) {
+        Deck deck = deckRepository.findById(deckId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Deck not found"));
+
+        List<Flashcard> all = deck.getFlashcards();
+        if (all.size() < numberOfQuestions) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Not enough flashcards in the deck for the requested number of questions");
+        }
+
+        Collections.shuffle(all);
+        List<Flashcard> selected = all.subList(0, numberOfQuestions);
+
+        Quiz quiz = new Quiz();
+        quiz.setTimeLimit(timeLimit);
+        quiz.setStartTime(new Date());
+        quiz.setIsMultiple(Boolean.TRUE.equals(isMultiple));
+        quiz.setQuizStatus(quiz.getIsMultiple() ? QuizStatus.WAITING : QuizStatus.IN_PROGRESS);
+        quiz.getDecks().add(deck);
+        quiz.setSelectedFlashcards(new ArrayList<>(selected));
+
+        deck.setQuiz(quiz);
+        quizRepository.save(quiz);
+        return quiz;
+    }
+
+    /** In multi-player mode, start the quiz when enough participants joined. */
     public Quiz startMultiplayerIfReady(Long quizId) {
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz not found"));
 
-        // For a 2-player scenario, we check if there's at least 2 participants.
-        // The simplest approach might be to check the quiz's decks, or check invitation logic.
-        // Here we assume if there's at least 2 decks or we have a known logic that both users have joined.
-        if (quiz.getIsMultiple() && QuizStatus.WAITING.equals(quiz.getQuizStatus())) {
-            // Example: if quiz has 2 decks or we have a separate mechanism to ensure 2 user progress states
-            if (quiz.getDecks() != null && quiz.getDecks().size() >= 2) {
-                quiz.setQuizStatus(QuizStatus.IN_PROGRESS);
-                quiz.setStartTime(new Date());
-                quizRepository.save(quiz);
-            }
+        if (quiz.getIsMultiple() && QuizStatus.WAITING.equals(quiz.getQuizStatus())
+                && quiz.getDecks() != null && quiz.getDecks().size() >= 2) {
+            quiz.setQuizStatus(QuizStatus.IN_PROGRESS);
+            quiz.setStartTime(new Date());
+            quizRepository.save(quiz);
         }
         return quiz;
     }
 
-    /**
-     * Return the current question for (quizId, userId) based on their progress index.
-     * If single-player quiz is not IN_PROGRESS or multi-player quiz is WAITING, we throw an error.
-     */
+    /** Returns the current question for a given user, enforcing quiz state & order. */
     public Flashcard getCurrentQuestion(Long quizId, Long userId) {
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz not found"));
 
         if (!QuizStatus.IN_PROGRESS.equals(quiz.getQuizStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quiz is not in progress yet.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quiz is not in progress.");
         }
 
-        QuizProgressStore.ProgressState progress = QuizProgressStore.getProgress(quizId, userId);
-        if (progress.isFinished()) {
+        QuizProgressStore.ProgressState prog = QuizProgressStore.getProgress(quizId, userId);
+        if (prog.isFinished()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You have already finished this quiz.");
         }
 
-        List<Flashcard> flashcards = quiz.getSelectedFlashcards();
-        if (flashcards.isEmpty()) {
+        List<Flashcard> cards = quiz.getSelectedFlashcards();
+        if (cards.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No questions in this quiz.");
         }
-
-        int currentIndex = progress.getCurrentIndex();
-        if (currentIndex >= flashcards.size()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No more questions. Quiz is finished.");
+        int idx = prog.getCurrentIndex();
+        if (idx >= cards.size()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No more questions left.");
         }
 
-        return flashcards.get(currentIndex);
+        return cards.get(idx);
     }
 
-    /**
-     * Processes an answer, returns a response telling the front end if it was correct,
-     * if user is finished, and the next question if not finished.
-     */
+    /** Handles an answer submission and returns feedback (correct?, finished?, next question?). */
     public QuizAnswerResponseDTO processAnswerWithFeedback(
-            Long quizId,
-            Long flashcardId,
-            String selectedAnswer,
-            Long userId
-    ) {
+            Long quizId, Long flashcardId, String selectedAnswer, Long userId) {
+
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz not found"));
-
-        // Must be IN_PROGRESS for user to answer
         if (!QuizStatus.IN_PROGRESS.equals(quiz.getQuizStatus())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quiz not in progress.");
         }
 
-        QuizProgressStore.ProgressState progress = QuizProgressStore.getProgress(quizId, userId);
-        if (progress.isFinished()) {
+        QuizProgressStore.ProgressState prog = QuizProgressStore.getProgress(quizId, userId);
+        if (prog.isFinished()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You already finished this quiz.");
         }
 
-        List<Flashcard> flashcards = quiz.getSelectedFlashcards();
-        int currentIndex = progress.getCurrentIndex();
-        if (currentIndex >= flashcards.size()) {
+        List<Flashcard> cards = quiz.getSelectedFlashcards();
+        int idx = prog.getCurrentIndex();
+        if (idx >= cards.size()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No more questions left.");
         }
 
-        Flashcard currentCard = flashcards.get(currentIndex);
-        if (!currentCard.getId().equals(flashcardId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Wrong flashcard ID for the current question.");
+        Flashcard current = cards.get(idx);
+        if (!current.getId().equals(flashcardId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong flashcard ID for current question.");
         }
 
-        progress.setTotalAttempts(progress.getTotalAttempts() + 1);
+        prog.setTotalAttempts(prog.getTotalAttempts() + 1);
 
-        boolean wasCorrect = currentCard.getAnswer().equalsIgnoreCase(selectedAnswer.trim());
-        if (wasCorrect) {
-            // Correct => increment index or finish
-            progress.setTotalCorrect(progress.getTotalCorrect() + 1);
-
-            // If not last question, go to next
-            if (currentIndex + 1 < flashcards.size()) {
-                progress.setCurrentIndex(currentIndex + 1);
+        boolean correct = current.getAnswer().equalsIgnoreCase(selectedAnswer.trim());
+        if (correct) {
+            prog.setTotalCorrect(prog.getTotalCorrect() + 1);
+            if (idx + 1 < cards.size()) {
+                prog.setCurrentIndex(idx + 1);
             } else {
-                // user finishes
-                progress.setFinished(true);
-                long endTimeMillis = System.currentTimeMillis();
-                long timeTakenMillis = endTimeMillis - progress.getStartTimeMillis();
-                User user = findUserById(userId);
-                statisticsService.recordQuizStats(user, quiz, progress.getTotalCorrect(), progress.getTotalAttempts(), timeTakenMillis);
+                prog.setFinished(true);
+                long elapsed = System.currentTimeMillis() - prog.getStartTimeMillis();
+                statisticsService.recordQuizStats(findUserById(userId), quiz,
+                        prog.getTotalCorrect(), prog.getTotalAttempts(), elapsed);
             }
         }
-        // if not correct, user stays on the same question
 
-        // Check if all participants are finished. If so, set updateType=finished.
         boolean allFinished = checkAllPlayersDone(quiz);
+        broadcastProgress(quizId, cards.size(), allFinished);
 
-        // broadcast scoreboard
-        broadcastProgress(quiz.getId(), flashcards.size(), allFinished);
-
-        // Build the response to front end
-        QuizAnswerResponseDTO response = new QuizAnswerResponseDTO();
-        response.setWasCorrect(wasCorrect);
-        response.setFinished(progress.isFinished());
-
-        if (!progress.isFinished()) {
-            // fetch new question
-            Flashcard nextCard = flashcards.get(progress.getCurrentIndex());
-            response.setNextQuestion(FlashcardMapper.toDTO(nextCard));
-        } else {
-            response.setNextQuestion(null);
-        }
-
-        return response;
+        QuizAnswerResponseDTO resp = new QuizAnswerResponseDTO();
+        resp.setWasCorrect(correct);
+        resp.setFinished(prog.isFinished());
+        resp.setNextQuestion(prog.isFinished() ? null
+                : FlashcardMapper.toDTO(cards.get(prog.getCurrentIndex())));
+        return resp;
     }
 
-    /**
-     * If single-player, only check that user. If multi-player, we check that all users have isFinished = true.
-     */
+    /* Check completion across participants. */
     private boolean checkAllPlayersDone(Quiz quiz) {
-        // gather progress for all who have joined
-        List<QuizProgressStore.UserProgressEntry> allProgress = QuizProgressStore.getProgressForQuiz(quiz.getId());
+        List<QuizProgressStore.UserProgressEntry> all = QuizProgressStore.getProgressForQuiz(quiz.getId());
         if (quiz.getIsMultiple()) {
-            // multi => we want to see if at least 2 user progress states exist, and all are finished
-            if (allProgress.size() < 2) {
-                return false;
-            }
-            return allProgress.stream().allMatch(entry -> entry.getProgress().isFinished());
-        } else {
-            // single => if the single user is finished
-            // if there's a progress entry at all
-            return !allProgress.isEmpty() && allProgress.get(0).getProgress().isFinished();
+            return all.size() >= 2 && all.stream().allMatch(e -> e.getProgress().isFinished());
         }
+        return !all.isEmpty() && all.get(0).getProgress().isFinished();
     }
 
-    /**
-     * Broadcast scoreboard to /topic/quizUpdates/{quizId}.
-     * If 'allFinished' is true => updateType=finished. Otherwise => progress.
-     */
-    private void broadcastProgress(Long quizId, int totalQuestions, boolean allFinished) {
-        List<QuizProgressStore.UserProgressEntry> allProg = QuizProgressStore.getProgressForQuiz(quizId);
-
-        List<PlayerProgressDTO> scoreboard = allProg.stream()
-                .map(entry -> {
+    /* Web-Socket scoreboard broadcast */
+    private void broadcastProgress(Long quizId, int totalQ, boolean finished) {
+        List<PlayerProgressDTO> board = QuizProgressStore.getProgressForQuiz(quizId).stream()
+                .map(e -> {
                     PlayerProgressDTO dto = new PlayerProgressDTO();
-                    dto.setUserId(entry.getUserId());
-                    dto.setScore(entry.getProgress().getTotalCorrect());
-                    dto.setAnsweredQuestions(entry.getProgress().getCurrentIndex());
+                    dto.setUserId(e.getUserId());
+                    dto.setScore(e.getProgress().getTotalCorrect());
+                    dto.setAnsweredQuestions(e.getProgress().getCurrentIndex());
                     return dto;
-                })
-                .collect(Collectors.toList());
+                }).collect(Collectors.toList());
 
-        QuizUpdateMessageDTO update = new QuizUpdateMessageDTO();
-        update.setQuizId(quizId);
-        update.setUpdateType(allFinished ? "finished" : "progress");
-        update.setTotalQuestions((long) totalQuestions);
-        update.setPlayerProgress(scoreboard);
+        QuizUpdateMessageDTO msg = new QuizUpdateMessageDTO();
+        msg.setQuizId(quizId);
+        msg.setUpdateType(finished ? "finished" : "progress");
+        msg.setTotalQuestions((long) totalQ);
+        msg.setPlayerProgress(board);
 
-        String destination = "/topic/quizUpdates/" + quizId;
-        messagingTemplate.convertAndSend(destination, update);
+        messagingTemplate.convertAndSend("/topic/quizUpdates/" + quizId, msg);
     }
 
-    // Overload if you want to broadcast without the "allFinished" param
-    private void broadcastProgress(Long quizId, int totalQuestions) {
-        broadcastProgress(quizId, totalQuestions, false);
-    }
+    /* ────────────────── Misc helpers ────────────────── */
 
-    /**
-     * Summaries or other final calls
-     */
     public Quiz getQuizStatus(Long quizId) {
         return quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz not found"));

@@ -1,92 +1,73 @@
 package ch.uzh.ifi.hase.soprafs24.entity;
 
 import java.util.Date;
-import javax.persistence.*;
 
-import ch.uzh.ifi.hase.soprafs24.constant.InvitationStatus;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter 
+@Setter // Generates getters, setters automatically
 @Entity
 @Table(name = "invitation")
-public class Invitation {
+public class Invitation  implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // The user sending the invitation.
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "inviter_id", nullable = false)
-    private User inviter;
-
-    // The user being invited.
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "invitee_id", nullable = false)
-    private User invitee;
-
-    // The quiz session associated with this invitation.
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "quiz_id", nullable = false)
+    @OneToOne(mappedBy = "invitation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private Quiz quiz;
 
-    // Status of the invitation (e.g., PENDING, ACCEPTED, DECLINED)
+    @OneToMany(mappedBy = "invitation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Deck> decks = new ArrayList<>();
+
     @Column(nullable = false)
-    private InvitationStatus status;
+    private int timeLimit;
 
-    // Timestamp for when the invitation was created.
+    @ManyToOne
+    @JoinColumn(name = "from_user_id", nullable = false)
+    @JsonIgnore
+    private User fromUser;
+
+    @ManyToOne
+    @JoinColumn(name = "to_user_id", nullable = false)
+    @JsonIgnore
+    private User toUser;
+
     @Column(nullable = false)
-    private Date createdAt;
+    private Boolean isAccepted;
 
-    // Timestamp for when the invitation was responded to (optional)
-    @Column
-    private Date respondedAt;
-
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public User getInviter() {
-        return inviter;
-    }
-    public void setInviter(User inviter) {
-        this.inviter = inviter;
-    }
-
-    public User getInvitee() {
-        return invitee;
-    }
-    public void setInvitee(User invitee) {
-        this.invitee = invitee;
-    }
-
-    public Quiz getQuiz() {
-        return quiz;
-    }
-    public void setQuiz(Quiz quiz) {
-        this.quiz = quiz;
-    }
-
-    public InvitationStatus getStatus() {
-        return status;
-    }
-    public void setStatus(InvitationStatus status) {
-        this.status = status;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Date getRespondedAt() {
-        return respondedAt;
-    }
-    public void setRespondedAt(Date respondedAt) {
-        this.respondedAt = respondedAt;
-    }
+    @Column(nullable = true)
+    private Date isAcceptedDate;
+    
 }
+//     // The quiz session associated with this invitation.
+//     @ManyToOne(fetch = FetchType.LAZY)
+//     @JoinColumn(name = "quiz_id", nullable = false)
+//     private Quiz quiz;
+
+//     // Status of the invitation (e.g., PENDING, ACCEPTED, DECLINED)
+//     @Column(nullable = false)
+//     private InvitationStatus status;

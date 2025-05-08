@@ -22,6 +22,11 @@ import java.util.List;
  * - unique = true -> this value must be unqiue across the database -> composes
  * the primary key
  */
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter 
+@Setter // Generates getters, setters automatically
 @Entity
 @Table(name = "user")
 public class User implements Serializable {
@@ -41,8 +46,8 @@ public class User implements Serializable {
   @Column(nullable = true, unique = true)
   private String token;
 
-  @Column(nullable = true)
-  private String fcmToken;
+  // @Column(nullable = true)
+  // private String fcmToken;
 
   @Column(nullable = false)
   private UserStatus status;
@@ -65,92 +70,118 @@ public class User implements Serializable {
   @JsonIgnore
   private List<Score> scores = new ArrayList<>();
 
+  @OneToMany(mappedBy = "fromUser", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore
+  private List<Invitation> invitationsSent = new ArrayList<>();
 
-  public Long getId() {
-    return id;
-  }
+  @OneToMany(mappedBy = "toUser", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore
+  private List<Invitation> invitationsReceived = new ArrayList<>();
 
-  public void setId(Long id) {
-    this.id = id;
-  }
 
-  public String getName() {
-    return name;
-  }
+  // public Long getId() {
+  //   return id;
+  // }
 
-  public void setName(String name) {
-    this.name = name;
-  }
+  // public void setId(Long id) {
+  //   this.id = id;
+  // }
 
-  public String getUsername() {
-    return username;
-  }
+  // public String getName() {
+  //   return name;
+  // }
 
-  public void setUsername(String username) {
-    this.username = username;
-  }
+  // public void setName(String name) {
+  //   this.name = name;
+  // }
 
-  public String getToken() {
-    return token;
-  }
+  // public String getUsername() {
+  //   return username;
+  // }
 
-  public void setToken(String token) {
-    this.token = token;
-  }
+  // public void setUsername(String username) {
+  //   this.username = username;
+  // }
 
-  public String getFcmToken() {
-    return fcmToken;
-  }
+  // public String getToken() {
+  //   return token;
+  // }
 
-  public void setFcmToken(String fcmToken) {
-    this.fcmToken = fcmToken;
-  }
+  // public void setToken(String token) {
+  //   this.token = token;
+  // }
 
-  public UserStatus getStatus() {
-    return status;
-  }
+  // // public String getFcmToken() {
+  // //   return fcmToken;
+  // // }
 
-  public void setStatus(UserStatus status) {
-    this.status = status;
-  }
+  // // public void setFcmToken(String fcmToken) {
+  // //   this.fcmToken = fcmToken;
+  // // }
 
-  public String getPassword() {
-    return password;
-  }
+  // public UserStatus getStatus() {
+  //   return status;
+  // }
 
-  public void setPassword(String password) {
-    this.password = password;
-  }
+  // public void setStatus(UserStatus status) {
+  //   this.status = status;
+  // }
 
-  public Date getCreationDate() {
-    return creationDate;
-  }
+  // public String getPassword() {
+  //   return password;
+  // }
 
-  public void setCreationDate(Date creationDate) {
-    this.creationDate = creationDate;
-  }
+  // public void setPassword(String password) {
+  //   this.password = password;
+  // }
 
-  public Date getBirthday() {
-    return birthday;
-  }
+  // public Date getCreationDate() {
+  //   return creationDate;
+  // }
 
-  public void setBirthday(Date birthday) {
-    this.birthday = birthday;
-  }
+  // public void setCreationDate(Date creationDate) {
+  //   this.creationDate = creationDate;
+  // }
 
-  public List<Deck> getDecks() {
-    return decks;
-  }
+  // public Date getBirthday() {
+  //   return birthday;
+  // }
 
-  public void setDecks(List<Deck> decks) {
-      this.decks = decks;
-  }
+  // public void setBirthday(Date birthday) {
+  //   this.birthday = birthday;
+  // }
 
-  public List<Score> getScores() {
-    return scores;
-  }
+  // public List<Deck> getDecks() {
+  //   return decks;
+  // }
 
-  public void setScores(List<Score> scores) {
-      this.scores = scores;
-  }
+  // public void setDecks(List<Deck> decks) {
+  //     this.decks = decks;
+  // }
+
+  // public List<Score> getScores() {
+  //   return scores;
+  // }
+
+  // public void setScores(List<Score> scores) {
+  //   this.scores = scores;
+  // }
+
+  // public List<Invitation> getInvitationsSent() {
+  //   return invitationsSent;
+  // }
+
+  // public void setInvitationsSent(List<Invitation> invitationsSent) {
+  //   this.invitationsSent = invitationsSent;
+  // }
+
+  // public List<Invitation> getInvitationsReceived() {
+  //   return invitationsReceived;
+  // }
+
+  // public void setInvitationsReceived(List<Invitation> invitationsReceived) {
+  //   this.invitationsReceived = invitationsReceived;
+  // }
+
+
 }

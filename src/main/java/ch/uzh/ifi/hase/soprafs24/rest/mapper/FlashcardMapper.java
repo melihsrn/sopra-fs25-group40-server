@@ -5,12 +5,12 @@ import ch.uzh.ifi.hase.soprafs24.entity.Flashcard;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import org.mapstruct.*;
+import org.springframework.stereotype.Component;
 
-@Mapper
+@Component
 public class FlashcardMapper {
 
-    public static FlashcardDTO toDTO(Flashcard flashcard) {
+    public FlashcardDTO toDTO(Flashcard flashcard) {
         FlashcardDTO dto = new FlashcardDTO();
         dto.setId(flashcard.getId());
         dto.setImageUrl(flashcard.getImageUrl());
@@ -23,11 +23,11 @@ public class FlashcardMapper {
         return dto;
     }
 
-    public static List<FlashcardDTO> toDTOList(List<Flashcard> flashcards) {
-        return flashcards.stream().map(FlashcardMapper::toDTO).collect(Collectors.toList());
+    public List<FlashcardDTO> toDTOList(List<Flashcard> flashcards) {
+        return flashcards.stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    public static Flashcard toEntity(FlashcardDTO dto) {
+    public Flashcard toEntity(FlashcardDTO dto) {
         Flashcard flashcard = new Flashcard();
         flashcard.setId(dto.getId());
         flashcard.setImageUrl(dto.getImageUrl());
