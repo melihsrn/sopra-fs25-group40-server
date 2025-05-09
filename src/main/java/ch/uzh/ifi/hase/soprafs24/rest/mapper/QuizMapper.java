@@ -1,18 +1,15 @@
 package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import ch.uzh.ifi.hase.soprafs24.entity.*;
 import org.springframework.stereotype.Component;
 
 import ch.uzh.ifi.hase.soprafs24.constant.QuizStatus;
-import ch.uzh.ifi.hase.soprafs24.entity.Deck;
-import ch.uzh.ifi.hase.soprafs24.entity.Invitation;
-import ch.uzh.ifi.hase.soprafs24.entity.Quiz;
-import ch.uzh.ifi.hase.soprafs24.entity.Score;
-import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.DeckRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.QuizRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.ScoreRepository;
@@ -47,7 +44,6 @@ public class QuizMapper {
         dto.setId(quiz.getId());
         dto.setDecks(quiz.getDecks());
         dto.setScores(quiz.getScores());
-        dto.setInvitation(quiz.getInvitation());
 
         /* single-deck shortcut (from shak_branch) */
         if (quiz.getDecks() != null && !quiz.getDecks().isEmpty()) {
@@ -83,7 +79,6 @@ public class QuizMapper {
         quiz.setId(dto.getId());
         quiz.setDecks(dto.getDecks());
         quiz.setScores(dto.getScores());
-        quiz.setInvitation(dto.getInvitation());
         quiz.setStartTime(dto.getStartTime());
         quiz.setEndTime(dto.getEndTime());
         quiz.setTimeLimit(dto.getTimeLimit());
@@ -112,13 +107,24 @@ public class QuizMapper {
         quiz.setQuizStatus(QuizStatus.WAITING);
         quiz.setIsMultiple(true);
 
-        /* 1️⃣  make sure decks are managed entities */
+        /* 1 make sure decks are managed entities */
         List<Deck> managedDecks = invitation.getDecks().stream()
             .map(deck -> deckRepository.findById(deck.getId())
                     .orElseThrow(() -> new RuntimeException("Deck not found: " + deck.getId())))
             .collect(Collectors.toList());
         quiz.setDecks(new ArrayList<>(managedDecks));
-        quiz.setInvitation(invitation);
+
+        /* ── 2. Use *all* flashcards from those decks ───────────────────────────── */
+        List<Flashcard> cardPool = managedDecks.stream()
+                .flatMap(d -> d.getFlashcards().stream())
+                .collect(Collectors.toList());
+
+        if (cardPool.isEmpty()) {
+            throw new IllegalStateException("Invited decks contain no flashcards.");
+        }
+
+        Collections.shuffle(cardPool);                  // randomise order
+        quiz.setSelectedFlashcards(new ArrayList<>(cardPool));   // ← keep them all
 
         /* 2️⃣  save quiz first (so scores have FK) */
         quiz = quizRepository.save(quiz);

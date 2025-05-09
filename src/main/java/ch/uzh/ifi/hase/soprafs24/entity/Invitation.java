@@ -35,7 +35,9 @@ public class Invitation  implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(mappedBy = "invitation", cascade = CascadeType.ALL, orphanRemoval = true)
+//    @OneToOne(mappedBy = "invitation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE}
+            , orphanRemoval = false)
     @JsonIgnore
     private Quiz quiz;
 
