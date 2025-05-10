@@ -4,7 +4,8 @@ import java.util.Date;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "statistics")
+@Table(name = "statistics",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"quiz_id", "user_id"}))
 public class Statistics {
 
     @Id

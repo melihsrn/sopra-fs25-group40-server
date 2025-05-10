@@ -133,14 +133,18 @@ public class QuizMapper {
         User sender   = invitation.getFromUser();
         User receiver = invitation.getToUser();
 
+        int totalQ = quiz.getSelectedFlashcards().size();
+
         Score senderScore = new Score();
         senderScore.setUser(sender);
         senderScore.setQuiz(quiz);
+        senderScore.setTotalQuestions(totalQ);
         scoreRepository.save(senderScore);
 
         Score receiverScore = new Score();
         receiverScore.setUser(receiver);
         receiverScore.setQuiz(quiz);
+        receiverScore.setTotalQuestions(totalQ);
         scoreRepository.save(receiverScore);
 
         /* 4️⃣  attach scores to quiz and persist */

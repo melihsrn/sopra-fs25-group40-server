@@ -56,6 +56,10 @@ public class Quiz  implements Serializable {
     @JsonIgnore
     private List<Score> scores = new ArrayList<>();
 
+    @OneToOne(mappedBy = "quiz")
+    @JsonIgnore
+    private Invitation invitation;
+
     @Column(nullable = false)
     private Date startTime;
 

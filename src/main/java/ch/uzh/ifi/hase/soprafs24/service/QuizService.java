@@ -33,6 +33,7 @@ public class QuizService {
     private final FlashcardMapper       flashcardMapper;
     private final SimpMessagingTemplate messagingTemplate;
     private final StatisticsService     statisticsService;
+    private final ScoreRepository       scoreRepository;
 
     public QuizService(UserService            userService,
                        QuizRepository         quizRepository,
@@ -42,7 +43,8 @@ public class QuizService {
                        QuizMapper             quizMapper,
                        FlashcardMapper        flashcardMapper,
                        SimpMessagingTemplate  messagingTemplate,
-                       StatisticsService      statisticsService) {
+                       StatisticsService      statisticsService,
+                       ScoreRepository        scoreRepository) {
         this.userService          = userService;
         this.quizRepository       = quizRepository;
         this.userRepository       = userRepository;
@@ -52,6 +54,7 @@ public class QuizService {
         this.flashcardMapper      = flashcardMapper;
         this.messagingTemplate    = messagingTemplate;
         this.statisticsService    = statisticsService;
+        this.scoreRepository      = scoreRepository;
     }
 
     /* ╔═════════════════ Invitation section ═══════════════╗ */
@@ -270,9 +273,11 @@ public class QuizService {
         return cards.get(idx);
     }
 
+    @Transactional
     public QuizAnswerResponseDTO processAnswerWithFeedback(
             Long quizId, Long flashcardId, String answer, Long userId) {
 
+        /* ───── validation ───── */
         Quiz q = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Quiz not found"));
         if (q.getQuizStatus() != QuizStatus.IN_PROGRESS) {
@@ -295,22 +300,66 @@ public class QuizService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wrong flashcard ID for current question.");
         }
 
+        /* ───── evaluate answer ───── */
         prog.setTotalAttempts(prog.getTotalAttempts() + 1);
         boolean correct = cur.getAnswer().equalsIgnoreCase(answer.trim());
 
         if (correct) {
             prog.setTotalCorrect(prog.getTotalCorrect() + 1);
-            if (idx + 1 < cards.size()) {
-                prog.setCurrentIndex(idx + 1);
-            } else {
-                prog.setFinished(true);
-                long t = System.currentTimeMillis() - prog.getStartTimeMillis();
-                statisticsService.recordQuizStats(findUser(userId), q,
-                        prog.getTotalCorrect(), prog.getTotalAttempts(), t);
+
+            /* update persistent Score row */
+            Score score = scoreRepository.findByQuizIdAndUserId(quizId, userId);
+            if (score == null) {                    // safety: shouldn’t happen
+                score = new Score();
+                score.setQuiz(q);
+                score.setUser(findUser(userId));
+                score.setTotalQuestions(cards.size());
             }
+            score.setCorrectQuestions(score.getCorrectQuestions() + 1);
+            scoreRepository.save(score);
         }
 
-        broadcastProgress(quizId, cards.size(), checkAllFinished(q));
+        /* advance pointer or finish user */
+        if (correct && idx + 1 < cards.size()) {
+            prog.setCurrentIndex(idx + 1);
+        } else if (correct && idx + 1 == cards.size()) {
+            prog.setFinished(true);
+        }
+
+        long elapsed = System.currentTimeMillis() - prog.getStartTimeMillis();
+        statisticsService.recordQuizStats(findUser(userId), q,
+                prog.getTotalCorrect(), prog.getTotalAttempts(), elapsed);
+
+        /* ───── end-of-quiz detection ───── */
+        boolean allFinished = checkAllFinished(q);
+
+        boolean timeExpired = q.getTimeLimit() > 0 &&
+                (System.currentTimeMillis() - q.getStartTime().getTime() >= q.getTimeLimit() * 1000L);
+
+        if (allFinished || timeExpired) {
+            q.setQuizStatus(QuizStatus.COMPLETED);
+            q.setEndTime(new Date());
+
+            QuizProgressStore.getProgressForQuiz(quizId).forEach(entry -> {
+                QuizProgressStore.ProgressState p = entry.getProgress();
+                long el = System.currentTimeMillis() - p.getStartTimeMillis();
+                statisticsService.recordQuizStats(findUser(entry.getUserId()), q,
+                        p.getTotalCorrect(), p.getTotalAttempts(), el);
+            });
+
+
+            if (q.getInvitation() != null) {
+                User u1 = q.getInvitation().getFromUser();
+                User u2 = q.getInvitation().getToUser();
+                u1.setStatus(UserStatus.ONLINE);
+                u2.setStatus(UserStatus.ONLINE);
+                userRepository.saveAll(List.of(u1, u2));
+            }
+            quizRepository.save(q);
+        }
+
+        /* ───── broadcast & response ───── */
+        broadcastProgress(quizId, cards.size(), allFinished || timeExpired);
 
         QuizAnswerResponseDTO dto = new QuizAnswerResponseDTO();
         dto.setWasCorrect(correct);
@@ -319,6 +368,7 @@ public class QuizService {
                 : flashcardMapper.toDTO(cards.get(prog.getCurrentIndex())));
         return dto;
     }
+
 
     /* helpers ------------------------------------------------------------ */
 

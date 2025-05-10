@@ -17,9 +17,18 @@ public class StatisticsService {
     private StatisticsRepository statisticsRepository;
 
     public void recordQuizStats(User user, Quiz quiz, int score, int attempts, long timeTakenMillis) {
-        Statistics stats = new Statistics();
-        stats.setUser(user);
-        stats.setQuiz(quiz);
+//        Statistics stats = new Statistics();
+        Statistics stats = statisticsRepository
+                .lockByQuizIdAndUserId(quiz.getId(), user.getId())  // ← uses the lock
+                .orElseGet(() -> {
+                    Statistics s = new Statistics();
+                    s.setQuiz(quiz);
+                    s.setUser(user);
+                    return s;
+                });
+
+//        stats.setUser(user);
+//        stats.setQuiz(quiz);
         stats.setScore(score);
         stats.setNumberOfAttempts(attempts);
         // Convert milliseconds to seconds if you want, or store as is

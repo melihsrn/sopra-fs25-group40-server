@@ -10,4 +10,5 @@ import ch.uzh.ifi.hase.soprafs24.entity.Score;
 @Repository("scoreRepository")
 public interface ScoreRepository extends JpaRepository<Score,Long>{
     Optional<Score> findById(Long id);
+    Score findByQuizIdAndUserId(Long quizId, Long userId);
 } 
